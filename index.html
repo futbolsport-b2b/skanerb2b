@@ -2,32 +2,39 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERMINAL B2B PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TERMINAL B2B v3.0</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
-            <div id="order-badge">SKANUJ KOD QR</div>
-            <button id="btn-finish" style="display:none;">ZAKOŃCZ</button>
+            <div id="order-info">
+                <span id="label-status">SYSTEM GOTOWY</span>
+                <h2 id="order-id-display">SKANUJ KOD QR</h2>
+            </div>
+            <button id="btn-finish" onclick="location.reload()">RESET</button>
         </header>
 
-        <div id="reader"></div>
+        <div id="camera-wrapper">
+            <div id="reader"></div>
+            <div id="custom-laser"></div>
+        </div>
 
         <div class="ui-panel">
-            <input type="text" id="status-display" value="CZEKAM NA ZAMÓWIENIE" readonly>
+            <div id="status-msg">Czekam na dokument zamówienia...</div>
             
             <div id="qty-section">
-                <label style="font-size: 0.8rem; color: #94a3b8;">WPROWADŹ ILOŚĆ:</label>
-                <div class="qty-controls">
-                    <input type="number" id="quantity-input" value="1">
-                    <button id="btn-confirm-qty" class="btn-confirm">OK</button>
+                <div class="qty-card">
+                    <span id="scanned-product-name">PRODUKT</span>
+                    <div class="qty-input-group">
+                        <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric">
+                        <button id="btn-confirm-qty">DODAJ</button>
+                    </div>
+                    <button id="btn-cancel-qty">ANULUJ</button>
                 </div>
             </div>
-
-            <div id="debug-log">v2.1 - Produkcja</div>
         </div>
     </div>
     <script src="app.js"></script>
