@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v33</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=33">
+    <title>B2B TERMINAL v35</title>
+    <link rel="stylesheet" href="style.css?v=35">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
@@ -13,56 +12,73 @@
     
     <div class="app-container">
         <header>
-            <div id="header-info">
-                <span class="label">TERMINAL MAGAZYNOWY</span>
-                <div id="order-title">ZAM: <span id="order-val">ZESKANUJ KOD QR</span></div>
+            <div id="header-content">
+                <div class="brand-row">
+                    <span class="status-dot"></span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY</span>
+                </div>
+                <div id="order-info">
+                    <span class="label">ZAMÓWIENIE</span>
+                    <div id="order-val">ZESKANUJ KOD QR</div>
+                </div>
             </div>
             <button id="btn-finish-icon" style="display:none;">✕</button>
         </header>
 
-        <div id="camera-section">
-            <div id="scanner-instruction" style="display:none;">
-                Skanuj towar o Nr Kat:<br>
-                <span id="target-kat-display">---</span>
-            </div>
-
-            <div id="reader"></div>
-            <div id="scanner-visual">
-                <div class="corner tl"></div><div class="corner tr"></div>
-                <div class="corner bl"></div><div class="corner br"></div>
-                <div id="laser"></div>
-            </div>
-        </div>
-
-        <div class="content-panel">
-            <div id="task-card" style="display:none;">
-                <div class="nav-bar">
-                    <button id="btn-prev" class="nav-btn">◀</button>
-                    <div class="pos-label">POZYCJA ZAMÓWIENIA: <b id="task-lp">--</b></div>
-                    <button id="btn-next" class="nav-btn">▶</button>
+        <main id="main-view">
+            <section id="scanner-box">
+                <div id="scanner-instruction" style="display:none;">
+                    <span class="instruction-label">SZUKANY PRODUKT:</span>
+                    <div id="target-kat-display">---</div>
                 </div>
-                <div id="data-container">
-                    <h1 id="task-name">Wczytywanie...</h1>
-                    <div id="task-kat">---</div>
-                    <div class="qty-badge"><div id="task-qty">--</div></div>
+                <div id="reader"></div>
+                <div id="scanner-overlay">
+                    <div class="corner tl"></div><div class="corner tr"></div>
+                    <div class="corner bl"></div><div class="corner br"></div>
+                    <div id="laser-line"></div>
                 </div>
-                <button id="btn-scan-item">SKANUJ PRODUKT</button>
-            </div>
+            </section>
 
-            <div id="qty-modal">
-                <div class="modal-body">
-                    <div id="qty-name">---</div>
-                    <div id="qty-kat-label">Kat: <span id="qty-kat-val">---</span></div>
-                    <div class="remain-tag">Pozostało: <b id="qty-remain">0</b></div>
-                    <div class="input-row">
-                        <input type="number" id="qty-input" inputmode="numeric" placeholder="0">
-                        <button id="btn-qty-ok">✔</button>
+            <section id="task-panel" style="display:none;">
+                <div class="task-card">
+                    <div class="task-nav">
+                        <button id="btn-prev" class="btn-circle">◀</button>
+                        <span class="task-lp-info">POZYCJA <b id="task-lp">--</b></span>
+                        <button id="btn-next" class="btn-circle">▶</button>
                     </div>
-                    <button id="btn-qty-cancel">ANULUJ</button>
+                    
+                    <div class="task-content">
+                        <h1 id="task-name">Ładowanie...</h1>
+                        <div id="task-kat">---</div>
+                        <div class="task-qty-box">
+                            <span class="qty-label">DO POBRANIA</span>
+                            <div id="task-qty">0</div>
+                        </div>
+                    </div>
+                    
+                    <button id="btn-scan-item" class="btn-primary">SKANUJ PRODUKT</button>
                 </div>
+            </section>
+        </main>
+
+        <div id="qty-modal">
+            <div class="sheet">
+                <div class="sheet-header">
+                    <h2 id="qty-name">Nazwa Produktu</h2>
+                    <span id="qty-kat-val">Nr Kat: ---</span>
+                </div>
+                
+                <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
+                
+                <div class="input-group">
+                    <input type="number" id="qty-input" inputmode="numeric" placeholder="0">
+                    <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
+                </div>
+                
+                <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
             </div>
         </div>
     </div>
-    <script src="app.js?v=33"></script>
+    <script src="app.js?v=35"></script>
 </body>
 </html>
