@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B SCAN v13</title>
-    <link rel="stylesheet" href="style.css?v=13">
+    <title>B2B SCAN v14</title>
+    <link rel="stylesheet" href="style.css?v=14">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
@@ -28,18 +28,18 @@
                 <div id="task-nazwa">NAZWA PRODUKTU</div>
                 <div id="task-kat">NR KAT: -</div>
                 <div id="task-qty-info">DO WYDANIA: <span id="task-qty">-</span></div>
-                <button id="btn-trigger-scan">SKANUJ</button>
+                <button id="btn-trigger-scan">SKANUJ PRODUKT</button>
             </div>
 
             <div id="qty-panel">
                 <div class="qty-container">
-                    <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric">
+                    <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric" value="1">
                     <button id="btn-confirm-qty">✔</button>
                 </div>
             </div>
-            <div id="status-msg">Inicjalizacja skanera QR...</div>
+            <div id="status-msg">Gotowy do pracy</div>
         </div>
     </div>
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=14"></script>
 </body>
 </html>
