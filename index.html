@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skaner EAN-13 B2B</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Terminal B2B</h1>
+            <div class="status-dot" id="status-dot"></div>
+        </header>
+
+        <div id="scanner-container">
+            <div id="interactive" class="viewport"></div>
+            <div class="scanner-laser"></div>
+        </div>
+
+        <div class="controls">
+            <label for="ean-result">Kod EAN-13:</label>
+            <input type="text" id="ean-result" placeholder="Czekam na skan..." readonly>
+            <button id="btn-scan">URUCHOM SKANER</button>
+        </div>
+        
+        <div id="debug-log">Gotowy do pracy.</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
