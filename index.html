@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B SCAN v23</title>
-    <link rel="stylesheet" href="style.css?v=23">
+    <title>B2B SCAN v24</title>
+    <link rel="stylesheet" href="style.css?v=24">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
-    <div id="error-overlay">BŁĘDNY PRODUKT</div>
+    <div id="error-overlay">KOMUNIKAT BŁĘDU</div>
     
     <div class="app-container">
         <header>
@@ -35,28 +35,30 @@
             <div id="task-card" style="display: none;">
                 <div class="nav-row">
                     <button id="btn-prev" class="nav-btn">◀</button>
-                    <span id="task-order-label">POZYCJA ZAMÓWIENIA: <b id="task-lp-val">1</b></span>
+                    <span id="task-order-label">POZYCJA: <b id="task-lp-val">1</b></span>
                     <button id="btn-next" class="nav-btn">▶</button>
                 </div>
                 <h1 id="task-nazwa-big">Wczytywanie...</h1>
-                <div id="task-kat-val">---</div>
+                <div id="task-kat-val">KATALOG: ---</div>
                 <div class="task-qty-label">ILOŚĆ ZAMÓWIENIA</div>
                 <div id="task-qty-val">0</div>
                 <button id="btn-scan-item">SKANUJ PRODUKT</button>
             </div>
 
-            <div id="qty-panel">
-                <div class="qty-info-header">
+            <div id="qty-panel" style="display: none;">
+                <div class="qty-header">
+                    <div id="qty-nazwa-info">NAZWA...</div>
                     <div id="qty-kat-info">Nr Kat: <span id="kat-val-display">---</span></div>
                     <div id="qty-remain-info">Ilość do zebrania: <span id="qty-remain-val">0</span></div>
                 </div>
-                <div class="qty-box">
+                <div class="qty-box-pancerna">
                     <input type="number" id="qty-input" inputmode="numeric" pattern="[0-9]*" placeholder="0">
-                    <button id="btn-qty-ok">✔</button>
+                    <button id="btn-qty-ok">✔ DODAJ</button>
                 </div>
+                <button id="btn-qty-cancel">ANULUJ</button>
             </div>
         </div>
     </div>
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=24"></script>
 </body>
 </html>
