@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v32</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=32">
+    <title>B2B TERMINAL v33</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=33">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
@@ -15,12 +15,17 @@
         <header>
             <div id="header-info">
                 <span class="label">TERMINAL MAGAZYNOWY</span>
-                <div id="order-title">ZAM: <span id="order-val">ZESKANUJ</span></div>
+                <div id="order-title">ZAM: <span id="order-val">ZESKANUJ KOD QR</span></div>
             </div>
             <button id="btn-finish-icon" style="display:none;">✕</button>
         </header>
 
         <div id="camera-section">
+            <div id="scanner-instruction" style="display:none;">
+                Skanuj towar o Nr Kat:<br>
+                <span id="target-kat-display">---</span>
+            </div>
+
             <div id="reader"></div>
             <div id="scanner-visual">
                 <div class="corner tl"></div><div class="corner tr"></div>
@@ -33,7 +38,7 @@
             <div id="task-card" style="display:none;">
                 <div class="nav-bar">
                     <button id="btn-prev" class="nav-btn">◀</button>
-                    <div class="pos-label">POZYCJA: <b id="task-lp">--</b></div>
+                    <div class="pos-label">POZYCJA ZAMÓWIENIA: <b id="task-lp">--</b></div>
                     <button id="btn-next" class="nav-btn">▶</button>
                 </div>
                 <div id="data-container">
@@ -58,6 +63,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=32"></script>
+    <script src="app.js?v=33"></script>
 </body>
 </html>
