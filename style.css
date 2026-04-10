@@ -8,69 +8,68 @@
 }
 
 body {
-    margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg); color: white; overflow: hidden; height: 100vh;
+    margin: 0; font-family: -apple-system, sans-serif;
+    background: var(--bg); color: white; overflow: hidden; height: 100dvh;
 }
 
 .app-container {
-    height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
 }
 
 header {
-    padding-top: calc(var(--safe-top) + 10px);
-    padding-left: 20px; padding-right: 20px; padding-bottom: 15px;
+    padding: calc(var(--safe-top) + 10px) 20px 15px;
     background: var(--panel); display: flex; justify-content: space-between; align-items: center;
     flex-shrink: 0;
 }
 
-#label-status { font-size: 10px; color: #8e8e93; text-transform: uppercase; letter-spacing: 1px; }
+#label-status { font-size: 10px; color: #8e8e93; text-transform: uppercase; }
 #order-id-display { margin: 0; font-size: 18px; color: var(--accent); }
 
 #camera-wrapper {
-    position: relative; width: 100%; background: #000;
-    flex-grow: 1; max-height: 50vh; overflow: hidden;
-    transition: max-height 0.4s ease;
+    width: 100%; background: #000; flex-shrink: 0;
+    height: 50vh; transition: height 0.3s ease;
 }
-
-/* Po zeskanowaniu QR zmniejszamy aparat do linii dla EAN */
-.ean-active #camera-wrapper { max-height: 25vh; }
+.ean-active #camera-wrapper { height: 30vh; }
 
 #reader { width: 100% !important; height: 100% !important; border: none !important; }
 #reader video { object-fit: cover !important; height: 100% !important; }
 
-.ui-panel {
-    flex-shrink: 0; padding: 20px; background: var(--bg);
-    min-height: 320px; z-index: 10;
-}
+.ui-panel { flex-grow: 1; padding: 15px; position: relative; }
 
 #status-msg {
-    text-align: center; padding: 18px; border-radius: 12px; background: var(--panel);
-    font-weight: 600; font-size: 15px; margin-bottom: 15px; border: 1px solid #333;
-    transition: background 0.3s;
+    text-align: center; padding: 15px; border-radius: 12px; background: var(--panel);
+    font-weight: 600; font-size: 14px; border: 1px solid #333;
 }
 
-.qty-card {
-    background: var(--panel); padding: 15px; border-radius: 20px;
-    border: 1px solid #38383a; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+/* PANEL ILOŚCI - FIXED DO DOŁU */
+#qty-section {
+    display: none; position: fixed; bottom: 0; left: 0; width: 100%;
+    background: #2c2c2e; border-top: 1px solid #444;
+    padding: 20px 20px calc(env(safe-area-inset-bottom) + 15px);
+    box-sizing: border-box; z-index: 1000;
 }
 
-#scanned-product-name { color: #8e8e93; font-size: 12px; margin-bottom: 10px; display: block; }
+.qty-card { display: flex; flex-direction: column; gap: 12px; }
+
+#scanned-product-name { 
+    color: var(--success); font-weight: 700; font-size: 18px; 
+    text-align: center; display: block;
+}
 
 .qty-input-group { display: flex; gap: 12px; }
 
 #quantity-input {
-    flex: 1; background: #2c2c2e; border: 1px solid #444; border-radius: 12px;
-    color: white; font-size: 36px; text-align: center; padding: 10px;
+    flex: 1; background: #1c1c1e; border: 1px solid #555; border-radius: 12px;
+    color: white; font-size: 32px; text-align: center; padding: 12px;
 }
 
 #btn-confirm-qty {
     background: var(--success); color: white; border: none;
-    padding: 0 30px; border-radius: 12px; font-weight: bold; font-size: 18px;
+    padding: 0 25px; border-radius: 12px; font-weight: bold; font-size: 16px;
 }
 
 #btn-cancel-qty {
-    width: 100%; background: transparent; color: var(--error); border: none;
-    padding: 15px 0 0 0; font-size: 13px; font-weight: 500;
+    background: transparent; color: #8e8e93; border: none; padding: 10px; font-size: 13px;
 }
 
 #btn-reset { background: transparent; border: 1px solid #444; color: #888; padding: 6px 12px; border-radius: 8px; font-size: 12px; }
