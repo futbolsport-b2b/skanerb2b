@@ -4,7 +4,7 @@ const html5QrCode = new Html5Qrcode("reader");
 
 function resetProductUI() {
     isProcessing = true;
-    document.getElementById("task-card").classList.add("loading-state");
+    document.getElementById("task-panel").style.opacity = "0.3";
     document.getElementById("task-name").innerText = "Wczytywanie...";
     document.getElementById("task-kat").innerText = "---";
     document.getElementById("task-qty").innerText = "--";
@@ -17,20 +17,17 @@ async function startQR() {
     document.body.classList.add("qr-mode");
     document.getElementById("scanner-instruction").style.display = "none";
     setCornersColor("white");
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 20 }, onScan);
+    await html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: 240 }, onScan);
 }
 
 async function startEAN() {
     isProcessing = false;
     document.body.classList.remove("qr-mode");
     document.body.classList.add("ean-mode");
-    
-    // Wyświetl numer katalogowy nad skanerem
     document.getElementById("target-kat-display").innerText = targetItem.nr_kat;
     document.getElementById("scanner-instruction").style.display = "block";
-    
     setCornersColor("white");
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
+    await html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: {width: 310, height: 120} }, onScan);
 }
 
 function onScan(text) {
@@ -39,24 +36,24 @@ function onScan(text) {
 
     if (!currentOrderID) {
         isProcessing = true;
-        setCornersColor("#30d158");
+        setCornersColor("#32d74b");
         playBeep(880, 100);
         currentOrderID = code;
         document.getElementById("order-val").innerText = code;
         setTimeout(() => {
             html5QrCode.stop().then(() => {
-                document.getElementById("camera-section").style.display = "none";
+                document.getElementById("scanner-box").style.display = "none";
                 document.getElementById("btn-finish-icon").style.display = "flex";
                 fetchNext(0);
             });
         }, 150);
     } else if (code === targetItem.ean) {
         isProcessing = true;
-        setCornersColor("#30d158");
+        setCornersColor("#32d74b");
         playBeep(880, 100);
         setTimeout(() => {
             html5QrCode.stop().then(() => {
-                document.getElementById("camera-section").style.display = "none";
+                document.getElementById("scanner-box").style.display = "none";
                 document.getElementById("scanner-instruction").style.display = "none";
                 if (targetItem.pozostalo > 1) showQty();
                 else sendVal(1);
@@ -67,7 +64,6 @@ function onScan(text) {
     }
 }
 
-// OPTYMALIZACJA: Caching & Fast Data Rendering
 async function fetchNext(offset) {
     resetProductUI();
     currentOffset = offset;
@@ -76,15 +72,12 @@ async function fetchNext(offset) {
         if (res.status === "next_item") {
             targetItem = res.item;
             currentOffset = res.current_offset;
-            
-            // Renderuj dane błyskawicznie
             document.getElementById("task-lp").innerText = targetItem.lp;
             document.getElementById("task-name").innerText = targetItem.nazwa;
-            document.getElementById("task-kat").innerText = "KATALOG: " + targetItem.nr_kat;
+            document.getElementById("task-kat").innerText = targetItem.nr_kat;
             document.getElementById("task-qty").innerText = targetItem.pozostalo;
-            
-            document.getElementById("task-card").classList.remove("loading-state");
-            document.getElementById("task-card").style.display = "block";
+            document.getElementById("task-panel").style.opacity = "1";
+            document.getElementById("task-panel").style.display = "block";
             isProcessing = false;
         } else {
             alert("ZREALIZOWANO");
@@ -94,14 +87,14 @@ async function fetchNext(offset) {
 }
 
 function showQty() {
-    const p = document.getElementById("qty-modal");
+    const m = document.getElementById("qty-modal");
     document.getElementById("qty-name").innerText = targetItem.nazwa;
-    document.getElementById("qty-kat-val").innerText = targetItem.nr_kat;
+    document.getElementById("qty-kat-val").innerText = "Nr Kat: " + targetItem.nr_kat;
     document.getElementById("qty-remain").innerText = targetItem.pozostalo;
-    p.style.display = "flex";
-    const inp = document.getElementById("qty-input");
-    inp.value = "";
-    setTimeout(() => { inp.focus(); inp.click(); }, 100);
+    m.style.display = "flex";
+    const i = document.getElementById("qty-input");
+    i.value = "";
+    setTimeout(() => { i.focus(); i.click(); }, 100);
 }
 
 function sendVal(q) {
@@ -119,16 +112,12 @@ function sendVal(q) {
 
 function showError(m) {
     isProcessing = true;
-    setCornersColor("#ff3b30");
+    setCornersColor("#ff453a");
     playBeep(200, 600);
     const o = document.getElementById("error-overlay");
     document.getElementById("error-text").innerText = m;
     o.style.display = "flex";
-    setTimeout(() => { 
-        o.style.display = "none"; 
-        isProcessing = false; 
-        setCornersColor("white"); 
-    }, 1500);
+    setTimeout(() => { o.style.display = "none"; isProcessing = false; setCornersColor("white"); }, 1500);
 }
 
 function setCornersColor(c) { 
@@ -137,8 +126,8 @@ function setCornersColor(c) {
 
 document.getElementById("btn-qty-ok").onclick = () => sendVal(document.getElementById("qty-input").value);
 document.getElementById("btn-scan-item").onclick = () => { 
-    document.getElementById("task-card").style.display = "none"; 
-    document.getElementById("camera-section").style.display = "block"; 
+    document.getElementById("task-panel").style.display = "none"; 
+    document.getElementById("scanner-box").style.display = "block"; 
     startEAN(); 
 };
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
