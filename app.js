@@ -1,10 +1,23 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiqacaq2aSakr6YOZm3W9wXXGrWibtWOn13yuFbKlqFfo3BrsvQcZIBaIKTUCWTZg9OQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiqacaq2aSakr6YOZm3W9wXXGrWibtWOn13yuFbKlqFfo3BrsvQcZIBaIKTUCWTZg9OQ/exec"; // Zmień na swój URL Google lub PHP
 let currentOrderID = null;
 let currentOffset = 0;
 let targetItem = null;
 let isProcessing = false;
 
 const html5QrCode = new Html5Qrcode("reader");
+
+// PROTOKÓŁ HARD RESET - CZYŚCI "DUCHY" DANYCH
+function resetProductUI() {
+    isProcessing = true; 
+    const card = document.getElementById("task-card");
+    card.classList.add("loading-state");
+    
+    // FIZYCZNE USUNIĘCIE STARYCH TEKSTÓW
+    document.getElementById("task-nazwa-big").innerText = "Wczytywanie...";
+    document.getElementById("task-kat-val").innerText = "KATALOG: ---";
+    document.getElementById("task-qty-val").innerText = "--";
+    document.getElementById("task-lp-val").innerText = "--";
+}
 
 async function startQR() {
     isProcessing = false;
@@ -16,19 +29,18 @@ async function startQR() {
 async function startEAN() {
     isProcessing = false;
     document.body.classList.add("ean-mode");
-    setCornersColor("white"); // Upewnij się, że startujemy z białym
+    setCornersColor("white");
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
-async function onScan(text) {
+function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
 
-    // PROCEDURA: KOD ZAMÓWIENIA
     if (!currentOrderID) {
         if (code.includes("/") || code.includes("DHH")) {
             isProcessing = true;
-            setCornersColor("#30d158"); // Zielone ramki
+            setCornersColor("#30d158");
             playBeep(880, 100);
             currentOrderID = code;
             document.getElementById("order-number-val").innerText = currentOrderID;
@@ -40,48 +52,39 @@ async function onScan(text) {
                 });
             }, 200);
         }
-        return;
-    }
-
-    // PROCEDURA: KOD EAN PRODUKTU
-    if (currentOrderID) {
-        if (code === targetItem.ean) {
-            isProcessing = true;
-            setCornersColor("#30d158"); // ZIELONE RAMKI NA EAN
-            playBeep(880, 100);
-            
-            setTimeout(() => {
-                html5QrCode.stop().then(() => {
-                    document.getElementById("camera-wrapper").style.display = "none";
-                    if (targetItem.pozostalo > 1) {
-                        showQty();
-                    } else {
-                        sendVal(1);
-                    }
-                });
-            }, 200);
-        } else {
-            // CZERWONE RAMKI NA EAN PRZY BŁĘDZIE
-            showError("BŁĘDNY PRODUKT", "#ff453a");
-        }
+    } else if (code === targetItem.ean) {
+        isProcessing = true;
+        setCornersColor("#30d158");
+        playBeep(880, 100);
+        setTimeout(() => {
+            html5QrCode.stop().then(() => {
+                document.getElementById("camera-wrapper").style.display = "none";
+                if (targetItem.pozostalo > 1) showQty();
+                else sendVal(1);
+            });
+        }, 200);
+    } else {
+        showError("BŁĘDNY PRODUKT", "#ff453a");
     }
 }
 
 async function fetchNext(offset) {
+    resetProductUI(); // NATYCHMIASTOWE CZYSZCZENIE PRZED ZAPYTANIEM
     currentOffset = offset;
-    document.getElementById("task-nazwa-big").innerText = "Wczytywanie...";
-    document.getElementById("task-card").style.display = "block";
-
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${currentOrderID}&action=get_next&offset=${offset}`).then(r => r.json());
-        isProcessing = false;
         if (res.status === "next_item") {
             targetItem = res.item;
             currentOffset = res.current_offset;
+            
+            // WYPEŁNIANIE NOWYCH DANYCH
             document.getElementById("task-lp-val").innerText = targetItem.lp;
             document.getElementById("task-nazwa-big").innerText = targetItem.nazwa;
-            document.getElementById("task-kat-val").innerText = targetItem.nr_kat;
+            document.getElementById("task-kat-val").innerText = "KATALOG: " + targetItem.nr_kat;
             document.getElementById("task-qty-val").innerText = targetItem.pozostalo;
+            
+            document.getElementById("task-card").classList.remove("loading-state");
+            isProcessing = false;
         } else {
             alert("ZREALIZOWANO W CAŁOŚCI");
             location.reload();
@@ -92,39 +95,20 @@ async function fetchNext(offset) {
 function showQty() {
     const panel = document.getElementById("qty-panel");
     const input = document.getElementById("qty-input");
-    const btn = document.getElementById("btn-qty-ok");
-    
-    // Wypełnij dane w nowoczesnym panelu ilości
     document.getElementById("qty-nazwa-info").innerText = targetItem.nazwa;
     document.getElementById("kat-val-display").innerText = targetItem.nr_kat;
     document.getElementById("qty-remain-val").innerText = targetItem.pozostalo;
-    
-    // Upewnij się, że przycisk nie jest w stanie ładowania
-    btn.classList.remove("loading");
-    
-    // Flex jest potrzebny do poprawnego pozycjonowania modala
     panel.style.display = "flex";
-    
-    // Puste pole
     input.value = "";
-    
-    // Agresywny focus dla iOS
-    requestAnimationFrame(() => {
-        input.focus();
-        setTimeout(() => input.click(), 10);
-    });
+    requestAnimationFrame(() => { input.focus(); setTimeout(() => input.click(), 10); });
 }
 
 document.getElementById("btn-qty-ok").onclick = function() {
     const val = document.getElementById("qty-input").value;
     if(!val || val <= 0) return;
     this.classList.add("loading");
+    resetProductUI(); // Czyścimy kartę w tle przed zamknięciem panelu
     sendVal(val);
-};
-
-document.getElementById("btn-qty-cancel").onclick = function() {
-    document.getElementById("qty-panel").style.display = "none";
-    fetchNext(currentOffset); // Wróć do karty produktu
 };
 
 async function sendVal(q) {
@@ -134,45 +118,29 @@ async function sendVal(q) {
             document.getElementById("qty-panel").style.display = "none";
             fetchNext(currentOffset);
         } else {
-            // Obsługa błędu, usuwamy spinner z przycisku
             document.getElementById("btn-qty-ok").classList.remove("loading");
             showError(res.msg, "#ff453a");
             isProcessing = false;
         }
-    } catch (e) { 
-        isProcessing = false; 
-        document.getElementById("btn-qty-ok").classList.remove("loading");
-    }
+    } catch (e) { isProcessing = false; }
 }
 
-function showError(msg, cornerColor) {
+function showError(msg, color) {
     isProcessing = true;
-    setCornersColor(cornerColor); // Ustaw kolor ramek (EAN zrobi się czerwony)
+    setCornersColor(color);
     playBeep(200, 600);
     const overlay = document.getElementById("error-overlay");
-    overlay.innerText = msg;
     overlay.style.display = "flex";
-    setTimeout(() => {
-        overlay.style.display = "none";
-        isProcessing = false;
-        if(cornerColor === "#ff453a" && !currentOrderID) setCornersColor("white"); // Reset tylko dla QR
-    }, 1500);
+    document.getElementById("error-text").innerText = msg;
+    setTimeout(() => { overlay.style.display = "none"; isProcessing = false; }, 1500);
 }
 
-function setCornersColor(color) {
-    document.querySelectorAll('.corner').forEach(c => c.style.borderColor = color);
-}
-
-document.getElementById("btn-scan-item").onclick = () => {
-    document.getElementById("task-card").style.display = "none";
-    document.getElementById("camera-wrapper").style.display = "block";
-    startEAN();
-};
-
+function setCornersColor(color) { document.querySelectorAll('.corner').forEach(c => c.style.borderColor = color); }
+document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-card").style.display = "none"; document.getElementById("camera-wrapper").style.display = "block"; startEAN(); };
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
 
-function playBeep(f, d) { try { const c = new (window.AudioContext || window.webkitAudioContext)(); const o = c.createOscillator(); o.frequency.value = f; o.connect(c.destination); o.start(); o.stop(c.currentTime + (d/1000)); } catch(e) {} }
+function playBeep(f, d) { try { const c = new AudioContext(); const o = c.createOscillator(); o.frequency.value = f; o.connect(c.destination); o.start(); o.stop(c.currentTime + (d/1000)); } catch(e) {} }
 
 startQR();
