@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B ULTRA-SPEED</title>
-    <link rel="stylesheet" href="style.css?v=18">
+    <title>B2B ULTRA v19</title>
+    <link rel="stylesheet" href="style.css?v=19">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
@@ -13,7 +13,10 @@
         <header>
             <div id="header-info">
                 <span id="label-status">TERMINAL MAGAZYNOWY</span>
-                <div id="order-title">ZESKANUJ DOKUMENT</div>
+                <div id="order-title-container">
+                    <span id="order-prefix">ZAMÓWIENIE:</span> 
+                    <span id="order-number-val">ZESKANUJ...</span>
+                </div>
             </div>
             <button id="btn-finish-icon" style="display:none;">✖</button>
         </header>
@@ -35,12 +38,12 @@
             </div>
             <div id="qty-panel">
                 <div class="qty-box">
-                    <input type="number" id="qty-input" inputmode="decimal">
+                    <input type="number" id="qty-input" inputmode="numeric" pattern="[0-9]*" placeholder="0">
                     <button id="btn-qty-ok">✔</button>
                 </div>
             </div>
         </div>
     </div>
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
 </body>
 </html>
