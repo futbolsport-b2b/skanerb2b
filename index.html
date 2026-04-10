@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TERMINAL B2B PRO</title>
+    <title>TERMINAL B2B PRO v6</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
@@ -24,14 +24,14 @@
         <div class="ui-panel">
             <div id="status-msg">Czekam na kod QR zamówienia...</div>
             
-            <div id="qty-section" style="display: none;">
+            <div id="qty-section">
                 <div class="qty-card">
-                    <span id="scanned-product-name">EAN: 000000000000</span>
+                    <span id="scanned-product-name">Nazwa produktu...</span>
                     <div class="qty-input-group">
                         <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric" value="1">
-                        <button id="btn-confirm-qty">DODAJ</button>
+                        <button id="btn-confirm-qty">ZATWIERDŹ</button>
                     </div>
-                    <button id="btn-cancel-qty">ANULUJ SKAN</button>
+                    <button id="btn-cancel-qty">ANULUJ</button>
                 </div>
             </div>
         </div>
