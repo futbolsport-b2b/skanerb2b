@@ -2,78 +2,79 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkhZWRqRuVNqGsUv-hZ
 
 let currentOrderID = null;
 let lastScannedEAN = null;
-const statusDisplay = document.getElementById('status-display');
-const orderBadge = document.getElementById('order-badge');
-const debugLog = document.getElementById('debug-log');
-const btnFinish = document.getElementById('btn-finish');
-const qtySection = document.getElementById('qty-section');
-const qtyInput = document.getElementById('quantity-input');
-
 const html5QrCode = new Html5Qrcode("reader");
 
-// Start systemu
-html5QrCode.start(
-    { facingMode: "environment" }, 
-    { fps: 15, qrbox: { width: 200, height: 200 } }, 
-    onScanSuccess
-);
+// Funkcja startująca skaner z parametrami
+async function startScanner(isEanMode = false) {
+    if (html5QrCode.isScanning) {
+        await html5QrCode.stop();
+    }
+
+    const config = {
+        fps: 20,
+        qrbox: isEanMode ? { width: 300, height: 100 } : { width: 250, height: 250 },
+        aspectRatio: isEanMode ? 3.0 : 1.0
+    };
+
+    html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+}
 
 function onScanSuccess(decodedText) {
     const code = decodedText.trim();
 
-    // 1. ZAMÓWIENIE (QR)
+    // 1. WYKRYCIE ZAMÓWIENIA (QR)
     if (!currentOrderID && (code.includes("/") || code.includes("DHH"))) {
         currentOrderID = code;
-        orderBadge.innerText = "SESJA: " + currentOrderID;
-        orderBadge.className = "badge-active";
-        btnFinish.style.display = "block";
-        statusDisplay.value = "GOTOWY DO SKANOWANIA EAN";
+        document.body.classList.add("ean-active");
+        document.getElementById("order-id-display").innerText = currentOrderID;
+        document.getElementById("status-msg").innerText = "Zalogowano. Skanuj produkty.";
         
-        // Przełączenie celownika na linię
-        document.getElementById('reader').classList.add("ean-mode");
-        playBeep(880, 100);
+        playBeep(880, 150);
+        // Restart skanera w trybie EAN (wąskie pole)
+        startScanner(true);
         return;
     }
 
-    // 2. PRODUKT (EAN) - Pokazanie pól pod skanerem
+    // 2. WYKRYCIE PRODUKTU (EAN)
     if (currentOrderID && code !== currentOrderID) {
         html5QrCode.pause();
         lastScannedEAN = code;
         
-        statusDisplay.value = "PRODUKT: " + code;
-        qtySection.style.display = "block"; // Pokaż sekcję ilości zamiast modala
-        qtyInput.value = 1;
-        qtyInput.select();
+        document.getElementById("scanned-product-name").innerText = "EAN: " + code;
+        document.getElementById("qty-section").style.display = "flex";
+        document.getElementById("quantity-input").value = 1;
+        document.getElementById("quantity-input").focus();
+        
         playBeep(600, 100);
     }
 }
 
-document.getElementById('btn-confirm-qty').addEventListener('click', () => {
-    const qty = qtyInput.value;
-    qtySection.style.display = "none";
-    statusDisplay.value = "WYSYŁANIE...";
+document.getElementById("btn-confirm-qty").onclick = () => {
+    const qty = document.getElementById("quantity-input").value;
+    document.getElementById("qty-section").style.display = "none";
+    document.getElementById("status-msg").innerText = "Przesyłanie danych...";
 
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(lastScannedEAN)}&qty=${qty}`)
         .then(res => res.json())
         .then(result => {
-            statusDisplay.value = result.msg;
+            document.getElementById("status-msg").innerText = result.msg;
             if (result.status === "success") {
-                document.body.style.background = "#064e3b";
                 playBeep(880, 200);
+                flashUI("#30d158");
             } else {
-                document.body.style.background = "#7f1d1d";
                 playBeep(200, 500);
+                flashUI("#ff453a");
             }
-            setTimeout(() => {
-                document.body.style.background = "#0f172a";
-                html5QrCode.resume();
-            }, 1500);
+            setTimeout(() => html5QrCode.resume(), 1500);
         });
-});
+};
 
-btnFinish.addEventListener('click', () => {
-    location.reload(); // Najczystszy sposób na reset całego interfejsu
-});
+function flashUI(color) {
+    const msg = document.getElementById("status-msg");
+    const original = msg.style.background;
+    msg.style.background = color;
+    setTimeout(() => msg.style.background = original, 1000);
+}
 
 function playBeep(f, d) {
     const c = new AudioContext();
@@ -81,3 +82,6 @@ function playBeep(f, d) {
     o.frequency.value = f; o.connect(c.destination);
     o.start(); o.stop(c.currentTime + (d/1000));
 }
+
+// Pierwsze uruchomienie
+startScanner(false);
