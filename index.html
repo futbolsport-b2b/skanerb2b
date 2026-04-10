@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B SCAN v20</title>
-    <link rel="stylesheet" href="style.css?v=20">
+    <title>B2B SCAN v21</title>
+    <link rel="stylesheet" href="style.css?v=21">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
@@ -33,6 +33,11 @@
 
         <div class="ui-panel">
             <div id="task-card" style="display: none;">
+                <div class="nav-row">
+                    <button id="btn-prev" class="nav-btn">◀</button>
+                    <span id="task-lp-label">POZYCJA LP: <span id="task-lp-val">1</span></span>
+                    <button id="btn-next" class="nav-btn">▶</button>
+                </div>
                 <h1 id="task-nazwa-big">Wczytywanie...</h1>
                 <div id="task-kat-val">KATALOG: ---</div>
                 <div class="task-qty-label">ILOŚĆ ZAMÓWIENIA</div>
@@ -41,6 +46,7 @@
             </div>
 
             <div id="qty-panel">
+                <div id="qty-remain-label">Pozostało do zebrania: <span id="qty-remain-val">0</span></div>
                 <div class="qty-box">
                     <input type="number" id="qty-input" inputmode="numeric" pattern="[0-9]*" placeholder="0">
                     <button id="btn-qty-ok">✔</button>
@@ -48,6 +54,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=20"></script>
+    <script src="app.js?v=21"></script>
 </body>
 </html>
