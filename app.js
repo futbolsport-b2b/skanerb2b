@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEJFjxgtkz_vm7iIRZPIqQ1IfHdQlx2UmwslCT0v_regORM1DbNShS51yDugqIuQ_ckg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiqacaq2aSakr6YOZm3W9wXXGrWibtWOn13yuFbKlqFfo3BrsvQcZIBaIKTUCWTZg9OQ/exec";
 let currentOrderID = null;
 let currentOffset = 0;
 let targetItem = null;
@@ -16,18 +16,19 @@ async function startQR() {
 async function startEAN() {
     isProcessing = false;
     document.body.classList.add("ean-mode");
-    setCornersColor("white");
+    setCornersColor("white"); // Upewnij się, że startujemy z białym
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
-function onScan(text) {
+async function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
 
+    // PROCEDURA: KOD ZAMÓWIENIA
     if (!currentOrderID) {
         if (code.includes("/") || code.includes("DHH")) {
             isProcessing = true;
-            setCornersColor("#30d158");
+            setCornersColor("#30d158"); // Zielone ramki
             playBeep(880, 100);
             currentOrderID = code;
             document.getElementById("order-number-val").innerText = currentOrderID;
@@ -37,26 +38,31 @@ function onScan(text) {
                     document.getElementById("btn-finish-icon").style.display = "flex";
                     fetchNext(0);
                 });
-            }, 150);
+            }, 200);
         }
-    } else {
+        return;
+    }
+
+    // PROCEDURA: KOD EAN PRODUKTU
+    if (currentOrderID) {
         if (code === targetItem.ean) {
             isProcessing = true;
-            setCornersColor("#30d158");
+            setCornersColor("#30d158"); // ZIELONE RAMKI NA EAN
             playBeep(880, 100);
-            if (targetItem.pozostalo > 1) {
-                showQty();
-                setTimeout(() => {
-                    html5QrCode.stop().then(() => { document.getElementById("camera-wrapper").style.display = "none"; });
-                }, 200);
-            } else {
+            
+            setTimeout(() => {
                 html5QrCode.stop().then(() => {
                     document.getElementById("camera-wrapper").style.display = "none";
-                    sendVal(1);
+                    if (targetItem.pozostalo > 1) {
+                        showQty();
+                    } else {
+                        sendVal(1);
+                    }
                 });
-            }
+            }, 200);
         } else {
-            showError();
+            // CZERWONE RAMKI NA EAN PRZY BŁĘDZIE
+            showError("BŁĘDNY PRODUKT", "#ff453a");
         }
     }
 }
@@ -88,12 +94,14 @@ function showQty() {
     const input = document.getElementById("qty-input");
     const btn = document.getElementById("btn-qty-ok");
     
-    document.getElementById("kat-val-display").innerText = targetItem.nr_kat;
+    // Wypełnij dane w pancernej karcie ilości
+    document.getElementById("qty-nazwa-info").innerText = targetItem.nazwa;
+    document.getElementById("qty-kat-info").innerHTML = `Nr Kat: <span id="kat-val-display">${targetItem.nr_kat}</span>`;
     document.getElementById("qty-remain-val").innerText = targetItem.pozostalo;
     
     btn.classList.remove("loading");
     panel.style.display = "block";
-    input.value = "";
+    input.value = ""; // Puste pole
     
     // Agresywny focus dla iOS
     requestAnimationFrame(() => {
@@ -106,35 +114,41 @@ document.getElementById("btn-qty-ok").onclick = function() {
     const val = document.getElementById("qty-input").value;
     if(!val || val <= 0) return;
     this.classList.add("loading");
-    setTimeout(() => {
-        document.getElementById("qty-panel").style.display = "none";
-        sendVal(val);
-    }, 100);
+    sendVal(val);
+};
+
+document.getElementById("btn-qty-cancel").onclick = function() {
+    document.getElementById("qty-panel").style.display = "none";
+    fetchNext(currentOffset); // Wróć do karty produktu
 };
 
 async function sendVal(q) {
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${currentOrderID}&ean=${targetItem.ean}&qty=${q}&action=validate`).then(r => r.json());
         if (res.status === "success") {
+            document.getElementById("qty-panel").style.display = "none";
             fetchNext(currentOffset);
         } else {
-            showError();
+            // Obsługa błędu ilościowego ("PRZEKROCZONO ILOŚĆ")
+            document.getElementById("btn-qty-ok").classList.remove("loading");
+            showError(res.msg, "#ff453a");
             isProcessing = false;
-            showQty();
+            // Panel ilości ZOSTAJE OTWARTY, by poprawić liczbę
         }
     } catch (e) { isProcessing = false; }
 }
 
-function showError() {
+function showError(msg, cornerColor) {
     isProcessing = true;
-    setCornersColor("#ff453a");
+    setCornersColor(cornerColor); // Ustaw kolor ramek (EAN zrobi się czerwony)
     playBeep(200, 600);
     const overlay = document.getElementById("error-overlay");
+    overlay.innerText = msg;
     overlay.style.display = "flex";
     setTimeout(() => {
         overlay.style.display = "none";
         isProcessing = false;
-        setCornersColor("white");
+        if(cornerColor === "#ff453a" && !currentOrderID) setCornersColor("white"); // Reset tylko dla QR
     }, 1500);
 }
 
