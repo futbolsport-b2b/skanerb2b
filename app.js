@@ -1,9 +1,16 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXB96VXPerbb_gXwETDOL6TOKgU_tEicY13vo3OsvjyWaWmDm32TPTh4KI13HsGZXeNg/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZjG2ARNuillDNiBrwL3tBCVCMf3cIcPSkF93m5dbyHKJwgzYAxIDKgDrnoD3OzNw7Lw/exec";
 let currentOrderID = null;
 let targetItem = null;
 let isProcessing = false;
 
 const html5QrCode = new Html5Qrcode("reader");
+
+// Cache-friendly fetch
+async function fastFetch(params) {
+    const url = `${SCRIPT_URL}?${new URLSearchParams(params)}`;
+    const response = await fetch(url);
+    return await response.json();
+}
 
 async function startQR() {
     isProcessing = false;
@@ -33,10 +40,10 @@ function onScan(text) {
             setTimeout(() => {
                 html5QrCode.stop().then(() => {
                     document.getElementById("camera-wrapper").style.display = "none";
-                    document.getElementById("btn-finish").style.display = "block";
+                    document.getElementById("btn-finish-icon").style.display = "flex";
                     fetchNext();
                 });
-            }, 300);
+            }, 150); // Skrócony timeout
         }
     } else {
         if (code === targetItem.ean) {
@@ -52,56 +59,63 @@ function onScan(text) {
                         sendVal(1);
                     }
                 });
-            }, 300);
+            }, 150);
         } else {
             showError();
         }
     }
 }
 
-function fetchNext() {
-    document.getElementById("task-card").style.display = "block";
-    document.getElementById("task-nazwa-big").innerText = "SZUKANIE...";
+async function fetchNext() {
+    const card = document.getElementById("task-card");
+    const title = document.getElementById("task-nazwa-big");
+    card.style.display = "block";
+    title.innerText = "Wczytywanie...";
     
-    fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next`)
-        .then(r => r.json())
-        .then(res => {
-            isProcessing = false;
-            if (res.status === "next_item") {
-                targetItem = res;
-                document.getElementById("task-nazwa-big").innerText = res.nazwa;
-                document.getElementById("task-kat-val").innerText = "KATALOG: " + res.nr_kat;
-                document.getElementById("task-qty-val").innerText = res.pozostalo;
-            } else {
-                alert(res.msg);
-                location.reload();
-            }
-        });
+    try {
+        const res = await fastFetch({ orderID: currentOrderID, action: "get_next" });
+        isProcessing = false;
+        if (res.status === "next_item") {
+            targetItem = res;
+            title.innerText = res.nazwa;
+            document.getElementById("task-kat-val").innerText = "KATALOG: " + res.nr_kat;
+            document.getElementById("task-qty-val").innerText = res.pozostalo;
+        } else {
+            location.reload();
+        }
+    } catch (e) { isProcessing = false; }
 }
 
 function showQty() {
-    document.getElementById("qty-panel").style.display = "block";
+    const panel = document.getElementById("qty-panel");
+    panel.style.display = "block";
     const input = document.getElementById("qty-input");
     input.value = 1;
-    setTimeout(() => { input.focus(); input.select(); }, 150);
+    setTimeout(() => { input.focus(); input.select(); }, 50);
 }
 
-document.getElementById("btn-qty-ok").onclick = () => {
+document.getElementById("btn-qty-ok").onclick = function() {
+    // UI Prediction: ukrywamy panel od razu
+    document.getElementById("qty-panel").style.display = "none";
     sendVal(document.getElementById("qty-input").value);
 };
 
-function sendVal(q) {
-    fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
-        .then(r => r.json())
-        .then(res => {
-            if (res.status === "success") {
-                document.getElementById("qty-panel").style.display = "none";
-                fetchNext();
-            } else {
-                alert(res.msg);
-                isProcessing = false;
-            }
+async function sendVal(q) {
+    try {
+        const res = await fastFetch({ 
+            orderID: currentOrderID, 
+            ean: targetItem.ean, 
+            qty: q, 
+            action: "validate" 
         });
+        if (res.status === "success") {
+            fetchNext();
+        } else {
+            alert(res.msg);
+            isProcessing = false;
+            showQty(); // Przywróć przy błędzie
+        }
+    } catch (e) { isProcessing = false; }
 }
 
 function showError() {
@@ -114,7 +128,7 @@ function showError() {
         overlay.style.display = "none";
         isProcessing = false;
         setCornersColor("white");
-    }, 2000);
+    }, 1500); // Krótszy błąd
 }
 
 function setCornersColor(color) {
@@ -127,11 +141,11 @@ document.getElementById("btn-scan-item").onclick = () => {
     startEAN();
 };
 
-document.getElementById("btn-finish").onclick = () => { if(confirm("RESET?")) location.reload(); };
+document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
 
 function playBeep(f, d) {
     try {
-        const c = new AudioContext();
+        const c = new (window.AudioContext || window.webkitAudioContext)();
         const o = c.createOscillator();
         o.frequency.value = f; o.connect(c.destination);
         o.start(); o.stop(c.currentTime + (d/1000));
