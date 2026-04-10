@@ -1,6 +1,5 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkhZWRqRuVNqGsUv-hZ0kqVfsnRgBbqEVUsTMfLADsGA0qjaxy6oRh9QzTCQ4nCZt9MA/exec";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOCIJplV0NlgnL5VL3XfZDtIFZ8Y4oyMUepvCScFKbmqTB1q08_AhROKIpDkxnF8UfcA/exec";
 
 let currentOrderID = null;
 let lastScannedEAN = null;
