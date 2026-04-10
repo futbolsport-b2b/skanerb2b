@@ -1,11 +1,10 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZjG2ARNuillDNiBrwL3tBCVCMf3cIcPSkF93m5dbyHKJwgzYAxIDKgDrnoD3OzNw7Lw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwiumkpK3vuqsqngYlXlerYcKU8NsbhLsy7ngzO8Fv-gzi19fiqFFNC0ckSWbmISAL7Aw/exec";
 let currentOrderID = null;
 let targetItem = null;
 let isProcessing = false;
 
 const html5QrCode = new Html5Qrcode("reader");
 
-// Cache-friendly fetch
 async function fastFetch(params) {
     const url = `${SCRIPT_URL}?${new URLSearchParams(params)}`;
     const response = await fetch(url);
@@ -36,14 +35,16 @@ function onScan(text) {
             setCornersColor("#30d158");
             playBeep(880, 100);
             currentOrderID = code;
-            document.getElementById("order-title").innerText = "ZAMÓWIENIE: " + currentOrderID;
+            // Aktualizacja tylko wartości numeru
+            document.getElementById("order-number-val").innerText = currentOrderID;
+            
             setTimeout(() => {
                 html5QrCode.stop().then(() => {
                     document.getElementById("camera-wrapper").style.display = "none";
                     document.getElementById("btn-finish-icon").style.display = "flex";
                     fetchNext();
                 });
-            }, 150); // Skrócony timeout
+            }, 100);
         }
     } else {
         if (code === targetItem.ean) {
@@ -59,7 +60,7 @@ function onScan(text) {
                         sendVal(1);
                     }
                 });
-            }, 150);
+            }, 100);
         } else {
             showError();
         }
@@ -67,17 +68,14 @@ function onScan(text) {
 }
 
 async function fetchNext() {
-    const card = document.getElementById("task-card");
-    const title = document.getElementById("task-nazwa-big");
-    card.style.display = "block";
-    title.innerText = "Wczytywanie...";
-    
+    document.getElementById("task-card").style.display = "block";
+    document.getElementById("task-nazwa-big").innerText = "Wczytywanie...";
     try {
         const res = await fastFetch({ orderID: currentOrderID, action: "get_next" });
         isProcessing = false;
         if (res.status === "next_item") {
             targetItem = res;
-            title.innerText = res.nazwa;
+            document.getElementById("task-nazwa-big").innerText = res.nazwa;
             document.getElementById("task-kat-val").innerText = "KATALOG: " + res.nr_kat;
             document.getElementById("task-qty-val").innerText = res.pozostalo;
         } else {
@@ -87,17 +85,22 @@ async function fetchNext() {
 }
 
 function showQty() {
-    const panel = document.getElementById("qty-panel");
-    panel.style.display = "block";
+    document.getElementById("qty-panel").style.display = "block";
     const input = document.getElementById("qty-input");
-    input.value = 1;
-    setTimeout(() => { input.focus(); input.select(); }, 50);
+    input.value = ""; // Usunięcie wartości domyślnej
+    
+    // Agresywne wywołanie klawiatury
+    setTimeout(() => { 
+        input.focus(); 
+        input.click(); 
+    }, 50);
 }
 
 document.getElementById("btn-qty-ok").onclick = function() {
-    // UI Prediction: ukrywamy panel od razu
+    const val = document.getElementById("qty-input").value;
+    if(!val || val <= 0) return;
     document.getElementById("qty-panel").style.display = "none";
-    sendVal(document.getElementById("qty-input").value);
+    sendVal(val);
 };
 
 async function sendVal(q) {
@@ -113,7 +116,7 @@ async function sendVal(q) {
         } else {
             alert(res.msg);
             isProcessing = false;
-            showQty(); // Przywróć przy błędzie
+            showQty();
         }
     } catch (e) { isProcessing = false; }
 }
@@ -128,7 +131,7 @@ function showError() {
         overlay.style.display = "none";
         isProcessing = false;
         setCornersColor("white");
-    }, 1500); // Krótszy błąd
+    }, 1200);
 }
 
 function setCornersColor(color) {
