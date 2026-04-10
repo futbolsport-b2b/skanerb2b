@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyOCIJplV0NlgnL5VL3XfZDtIFZ8Y4oyMUepvCScFKbmqTB1q08_AhROKIpDkxnF8UfcA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTR2qaZskbjfcsjQN9idYRGMziXIuHCrd4UXGqxnpNMo1S_4sJk2Rww8UlISl9343J9A/exec";
 
 let currentOrderID = null;
 const statusDisplay = document.getElementById('status-display');
