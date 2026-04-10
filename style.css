@@ -1,26 +1,31 @@
-:root {
-    --bg: #000;
-    --panel: #1c1c1e;
-    --accent: #0a84ff;
-    --success: #30d158;
-    --error: #ff453a;
-}
+:root { --bg: #000; --panel: #1c1c1e; --accent: #0a84ff; --success: #30d158; --error: #ff453a; }
 body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: white; overflow: hidden; height: 100dvh; }
 .app-container { height: 100dvh; display: flex; flex-direction: column; }
-header { padding: calc(env(safe-area-inset-top) + 10px) 15px 10px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; z-index: 10; }
-#order-title { font-size: 16px; font-weight: bold; color: var(--accent); }
-#camera-wrapper { position: relative; width: 100%; height: 60vh; background: #000; flex-shrink: 0; overflow: hidden; transition: height 0.3s ease; }
-.ean-active #camera-wrapper { height: 35vh; }
+
+header { padding: calc(env(safe-area-inset-top) + 10px) 20px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+#order-title { font-size: 15px; font-weight: bold; color: var(--accent); margin-top: 2px; }
+#label-status { font-size: 10px; color: #8e8e93; text-transform: uppercase; }
+
+#camera-wrapper { position: relative; width: 100%; height: 55vh; transition: height 0.3s; background: #000; overflow: hidden; }
+.ean-mode #camera-wrapper { height: 30vh; }
 #reader { width: 100% !important; height: 100% !important; border: none !important; }
-#reader video { object-fit: cover !important; height: 100% !important; }
-#laser-line { display: none; position: absolute; top: 50%; left: 5%; right: 5%; height: 2px; background: red; box-shadow: 0 0 8px red; z-index: 100; pointer-events: none; transform: translateY(-50%); }
-.ean-active #laser-line { display: block; }
-.ui-panel { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; background: var(--bg); }
-#task-card { background: var(--panel); border-radius: 20px; padding: 20px; border: 1px solid #333; text-align: center; }
-#btn-trigger-scan { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 18px; }
-#qty-panel { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #2c2c2e; padding: 20px; box-sizing: border-box; border-top: 1px solid #444; z-index: 2000; }
-.qty-container { display: flex; justify-content: center; gap: 15px; }
-#quantity-input { width: 90px; height: 65px; background: #1c1c1e; border: 1px solid #555; border-radius: 12px; color: white; font-size: 32px; text-align: center; }
-#btn-confirm-qty { width: 80px; height: 65px; background: var(--success); color: white; border: none; border-radius: 12px; font-size: 30px; }
-#status-msg { text-align: center; font-size: 14px; color: #8e8e93; margin-top: auto; padding-bottom: 20px; }
-#btn-finish-order { background: #333; color: #fff; border: 1px solid #444; padding: 6px 12px; border-radius: 8px; font-size: 11px; }
+#laser-line { display: none; position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: red; box-shadow: 0 0 10px red; z-index: 100; pointer-events: none; }
+.ean-mode #laser-line { display: block; }
+
+#error-overlay { 
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(255, 69, 58, 0.95); z-index: 9999; justify-content: center; 
+    align-items: center; font-size: 24px; font-weight: bold; text-align: center; padding: 20px;
+}
+
+.ui-panel { flex-grow: 1; padding: 20px; background: var(--bg); }
+#task-card { background: var(--panel); border-radius: 15px; padding: 20px; text-align: center; border: 1px solid #333; }
+#btn-scan-item { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; margin-top: 15px; }
+
+#qty-panel { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #2c2c2e; padding: 30px 20px; border-top: 1px solid #444; z-index: 2000; }
+.qty-box { display: flex; justify-content: center; gap: 15px; }
+#qty-input { width: 100px; height: 70px; background: #1c1c1e; border: 1px solid var(--accent); border-radius: 12px; color: white; font-size: 35px; text-align: center; }
+#btn-qty-ok { width: 90px; height: 70px; background: var(--success); border: none; border-radius: 12px; font-size: 30px; color: white; }
+
+#status-footer { text-align: center; font-size: 13px; color: #555; margin-top: auto; padding-bottom: 15px; }
+#btn-finish { background: #333; border: none; color: white; padding: 8px 12px; border-radius: 8px; font-size: 11px; }
