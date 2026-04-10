@@ -1,0 +1,72 @@
+:root {
+    --bg: #000;
+    --panel: #1c1c1e;
+    --accent: #0a84ff;
+    --success: #30d158;
+    --error: #ff453a;
+}
+
+body {
+    margin: 0; font-family: -apple-system, sans-serif;
+    background: var(--bg); color: white; overflow: hidden; height: 100dvh;
+}
+
+.app-container { height: 100dvh; display: flex; flex-direction: column; }
+
+header {
+    padding: calc(env(safe-area-inset-top) + 8px) 15px 8px;
+    background: var(--panel); display: flex; justify-content: space-between; align-items: center;
+    flex-shrink: 0;
+}
+
+#order-id-display { font-size: 16px; color: var(--accent); font-weight: bold; }
+
+#camera-wrapper {
+    width: 100%; flex-shrink: 0; height: 45vh; transition: height 0.3s;
+}
+.ean-active #camera-wrapper { height: 28vh; }
+
+#reader { width: 100% !important; height: 100% !important; border: none !important; }
+#reader video { object-fit: cover !important; height: 100% !important; }
+
+.ui-panel { flex-grow: 1; padding: 10px; position: relative; }
+
+#status-msg {
+    text-align: center; padding: 12px; border-radius: 10px; 
+    background: var(--panel); font-size: 14px; border: 1px solid #333;
+}
+
+/* PANEL DOLNY */
+#qty-section {
+    display: none; position: fixed; bottom: 0; left: 0; width: 100%;
+    background: #2c2c2e; border-top: 1px solid #444;
+    padding: 12px 15px calc(env(safe-area-inset-bottom) + 10px);
+    box-sizing: border-box; z-index: 1000;
+}
+
+#scanned-product-name { 
+    color: var(--success); font-weight: bold; font-size: 17px; 
+    text-align: center; display: block; margin-bottom: 12px;
+}
+
+.compact-row {
+    display: flex; justify-content: center; align-items: center; gap: 12px;
+}
+
+#quantity-input {
+    width: 85px; /* Szerokość na 4 znaki */
+    height: 60px; background: #1c1c1e; border: 1px solid #555; 
+    border-radius: 12px; color: white; font-size: 32px; text-align: center;
+}
+
+#btn-confirm-qty {
+    width: 80px; height: 60px; background: var(--success); color: white; 
+    border: none; border-radius: 12px; font-size: 30px;
+}
+
+#btn-cancel-qty {
+    width: 60px; height: 60px; background: #444; color: var(--error); 
+    border: none; border-radius: 12px; font-size: 24px;
+}
+
+#btn-reset { background: #333; border: none; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 11px; }
