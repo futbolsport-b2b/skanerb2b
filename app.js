@@ -1,3 +1,4 @@
+// v29 - FINAL STABLE FOR GOOGLE SHEETS
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGSBUU806dL7-yiPaEOiBXod249-KXacWs-w6prEY1l00jDPQU4RZ7XJtM2Wc9sD2hbQ/exec"; 
 let currentOrderID = null;
 let currentOffset = 0;
@@ -6,7 +7,7 @@ let isProcessing = false;
 
 const html5QrCode = new Html5Qrcode("reader");
 
-// PROTOKÓŁ RESETU
+// FUNKCJA RESETU UI - CZYŚCI "DUCHY" DANYCH
 function resetProductUI() {
     isProcessing = true; 
     const card = document.getElementById("task-card");
@@ -21,48 +22,64 @@ async function startQR() {
     isProcessing = false;
     document.body.classList.remove("ean-mode");
     setCornersColor("white");
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 20 }, onScan);
+    try {
+        await html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, onScan);
+    } catch (err) {
+        console.error("Błąd startu kamery:", err);
+    }
 }
 
 async function startEAN() {
     isProcessing = false;
     document.body.classList.add("ean-mode");
     setCornersColor("white");
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
+    try {
+        await html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: {width: 300, height: 120} }, onScan);
+    } catch (err) {
+        console.error("Błąd startu EAN:", err);
+    }
 }
 
-function onScan(text) {
+async function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
 
-    // 1. ROZPOZNANIE ZAMÓWIENIA (Każdy pierwszy skan)
+    // 1. SKANOWANIE ZAMÓWIENIA (QR)
     if (!currentOrderID) {
         isProcessing = true;
         setCornersColor("#30d158");
         playBeep(880, 100);
+        
         currentOrderID = code;
         document.getElementById("order-number-val").innerText = currentOrderID;
-        setTimeout(() => {
-            html5QrCode.stop().then(() => {
-                document.getElementById("camera-wrapper").style.display = "none";
-                document.getElementById("btn-finish-icon").style.display = "flex";
-                fetchNext(0);
-            });
-        }, 150);
+
+        // Natychmiastowe przejście do widoku zadania, by uniknąć czarnego ekranu
+        document.getElementById("camera-wrapper").style.display = "none";
+        document.getElementById("btn-finish-icon").style.display = "flex";
+        
+        try {
+            await html5QrCode.stop();
+            await fetchNext(0);
+        } catch (e) {
+            console.error("Błąd po skanie QR:", e);
+            location.reload(); // W razie awarii wróć do startu
+        }
         return;
     }
 
-    // 2. ROZPOZNANIE EAN
+    // 2. SKANOWANIE PRODUKTU (EAN)
     if (code === targetItem.ean) {
         isProcessing = true;
         setCornersColor("#30d158");
         playBeep(880, 100);
-        setTimeout(() => {
-            html5QrCode.stop().then(() => {
+        
+        setTimeout(async () => {
+            try {
+                await html5QrCode.stop();
                 document.getElementById("camera-wrapper").style.display = "none";
                 if (targetItem.pozostalo > 1) showQty();
                 else sendVal(1);
-            });
+            } catch (e) { isProcessing = false; }
         }, 150);
     } else {
         showError("BŁĘDNY PRODUKT", "#ff453a");
@@ -70,11 +87,17 @@ function onScan(text) {
 }
 
 async function fetchNext(offset) {
-    resetProductUI(); 
+    resetProductUI();
     currentOffset = offset;
+    
+    // Zabezpieczenie czasowe (Timeout)
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 8000);
+
     try {
         const url = `${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`;
-        const res = await fetch(url).then(r => r.json());
+        const res = await fetch(url, { signal: controller.signal }).then(r => r.json());
+        clearTimeout(id);
         
         if (res.status === "next_item") {
             targetItem = res.item;
@@ -84,12 +107,17 @@ async function fetchNext(offset) {
             document.getElementById("task-kat-val").innerText = "KATALOG: " + targetItem.nr_kat;
             document.getElementById("task-qty-val").innerText = targetItem.pozostalo;
             document.getElementById("task-card").classList.remove("loading-state");
+            document.getElementById("task-card").style.display = "block";
             isProcessing = false;
         } else {
             alert("ZREALIZOWANO W CAŁOŚCI");
             location.reload();
         }
-    } catch (e) { isProcessing = false; }
+    } catch (e) {
+        isProcessing = false;
+        alert("Błąd połączenia z Google Sheets. Sprawdź internet lub URL skryptu.");
+        console.error("Fetch error:", e);
+    }
 }
 
 function showQty() {
@@ -100,7 +128,10 @@ function showQty() {
     document.getElementById("qty-remain-val").innerText = targetItem.pozostalo;
     panel.style.display = "flex";
     input.value = "";
-    requestAnimationFrame(() => { input.focus(); setTimeout(() => input.click(), 10); });
+    requestAnimationFrame(() => { 
+        input.focus(); 
+        setTimeout(() => input.click(), 50); 
+    });
 }
 
 document.getElementById("btn-qty-ok").onclick = function() {
@@ -132,15 +163,28 @@ function showError(msg, color) {
     const overlay = document.getElementById("error-overlay");
     overlay.style.display = "flex";
     document.getElementById("error-text").innerText = msg;
-    setTimeout(() => { overlay.style.display = "none"; isProcessing = false; }, 1500);
+    setTimeout(() => { 
+        overlay.style.display = "none"; 
+        isProcessing = false; 
+        if(!currentOrderID) setCornersColor("white");
+    }, 1500);
 }
 
-function setCornersColor(color) { document.querySelectorAll('.corner').forEach(c => c.style.borderColor = color); }
-document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-card").style.display = "none"; document.getElementById("camera-wrapper").style.display = "block"; startEAN(); };
+function setCornersColor(color) { 
+    document.querySelectorAll('.corner').forEach(c => c.style.borderColor = color); 
+}
+
+document.getElementById("btn-scan-item").onclick = () => { 
+    document.getElementById("task-card").style.display = "none"; 
+    document.getElementById("camera-wrapper").style.display = "block"; 
+    startEAN(); 
+};
+
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
 
 function playBeep(f, d) { try { const c = new AudioContext(); const o = c.createOscillator(); o.frequency.value = f; o.connect(c.destination); o.start(); o.stop(c.currentTime + (d/1000)); } catch(e) {} }
 
+// START SYSTEMU
 startQR();
