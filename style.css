@@ -1,82 +1,76 @@
 :root {
-    --bg: #0f172a;
-    --panel: #1e293b;
-    --accent: #3b82f6;
-    --success: #10b981;
-    --error: #ef4444;
+    --bg: #000000;
+    --panel: #1c1c1e;
+    --accent: #0a84ff;
+    --success: #30d158;
+    --error: #ff453a;
+    --safe-top: env(safe-area-inset-top);
 }
 
 body {
-    margin: 0; font-family: 'Inter', system-ui, sans-serif;
-    background-color: var(--bg); color: white;
-    display: flex; justify-content: center; height: 100vh;
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: white; overflow: hidden;
 }
 
 .app-container {
-    width: 100%; max-width: 480px; display: flex; flex-direction: column; background: var(--bg);
+    height: 100vh; display: flex; flex-direction: column;
 }
 
 header {
-    padding: 15px; display: flex; justify-content: space-between; align-items: center;
-    background: var(--panel); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    padding-top: calc(var(--safe-top) + 10px);
+    padding-left: 20px; padding-right: 20px; padding-bottom: 15px;
+    background: var(--panel); display: flex; justify-content: space-between; align-items: center;
 }
 
-/* Zmniejszone okno aparatu */
-#reader { 
-    width: 100% !important; 
-    max-height: 250px; /* Ograniczenie wysokości */
-    background: #000; 
-    border: none !important;
+#label-status { font-size: 10px; color: #8e8e93; text-transform: uppercase; }
+#order-id-display { margin: 0; font-size: 18px; color: var(--accent); }
+
+#camera-wrapper {
+    position: relative; width: 100%; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #000; flex-grow: 0; height: 60vh; /* Startowy rozmiar dla QR */
 }
 
-/* FIX CELOWNIKA: Wymuszenie kształtu linii dla EAN */
-.ean-mode #reader__scan_region {
-    height: 60px !important;
-    width: 80% !important;
-    top: 50% !important;
-    left: 10% !important;
-    transform: translateY(-50%) !important;
-    border: 2px solid var(--success) !important;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important;
-}
+/* Tryb EAN - zmniejszenie pola kamery */
+.ean-active #camera-wrapper { height: 30vh; }
 
-.ean-mode #reader__scan_region::after {
-    content: ""; position: absolute; top: 50%; left: 0; width: 100%;
-    height: 2px; background: red; box-shadow: 0 0 8px red;
-}
+#reader { width: 100% !important; border: none !important; }
+#reader video { object-fit: cover !important; }
 
-/* Panel sterowania pod skanerem */
+/* Customowy celownik liniowy */
+#custom-laser {
+    display: none; position: absolute; top: 50%; left: 0; width: 100%;
+    height: 2px; background: red; box-shadow: 0 0 12px red; z-index: 100;
+    pointer-events: none;
+}
+.ean-active #custom-laser { display: block; }
+
 .ui-panel {
-    flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+    flex-grow: 1; padding: 20px; background: var(--bg); display: flex; flex-direction: column;
 }
 
-#status-display {
-    width: 100%; background: #334155; border: 1px solid #475569; color: #f8fafc;
-    padding: 15px; font-size: 1rem; text-align: center; border-radius: 12px;
-    font-weight: 600; box-sizing: border-box;
+#status-msg {
+    text-align: center; padding: 15px; border-radius: 10px; background: var(--panel);
+    font-weight: 600; font-size: 16px; margin-bottom: 10px;
 }
 
-/* Sekcja wprowadzania ilości (Inline) */
 #qty-section {
-    display: none; background: var(--panel); padding: 20px; border-radius: 16px;
-    border: 2px solid var(--accent); animation: slideUp 0.3s ease-out;
+    display: none; flex-direction: column; gap: 10px;
 }
 
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.qty-card {
+    background: var(--panel); padding: 20px; border-radius: 20px; border: 1px solid #38383a;
+}
 
-.qty-controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+.qty-input-group { display: flex; gap: 10px; margin: 15px 0; }
 
 #quantity-input {
-    flex-grow: 1; background: #0f172a; border: 1px solid #334155; color: white;
-    font-size: 2rem; text-align: center; padding: 10px; border-radius: 8px;
+    flex: 1; background: #2c2c2e; border: none; border-radius: 10px;
+    color: white; font-size: 32px; text-align: center; padding: 10px;
 }
 
-.btn-confirm {
-    background: var(--success); color: white; border: none; padding: 15px 25px;
-    border-radius: 8px; font-weight: bold; cursor: pointer;
+#btn-confirm-qty {
+    background: var(--success); color: white; border: none;
+    padding: 0 25px; border-radius: 10px; font-weight: bold;
 }
 
-#btn-finish {
-    background: rgba(239, 68, 68, 0.2); color: var(--error); border: 1px solid var(--error);
-    padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;
-}
+#btn-finish { background: transparent; border: 1px solid #333; color: #666; padding: 5px 10px; border-radius: 5px; }
