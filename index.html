@@ -3,35 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TERMINAL B2B - Walidacja</title>
+    <title>B2B SCANNER PRO</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
-            <div class="logo">B2B SCANNER v2</div>
-            <div id="order-badge">BRAK ZAMÓWIENIA</div>
+            <div class="logo">TERMINAL B2B</div>
+            <div id="order-badge" class="badge-waiting">OCZEKIWANIE NA QR</div>
         </header>
 
-        <div id="scanner-container">
-            <div id="interactive" class="viewport"></div>
-            <div class="scan-overlay">
-                <div class="laser"></div>
-            </div>
-        </div>
+        <div id="reader" style="width: 100%; min-height: 300px;"></div>
 
         <div class="ui-panel">
             <div class="info-box">
-                <label>Status operacji:</label>
-                <input type="text" id="status-display" value="ZESKANUJ NR ZAMÓWIENIA" readonly>
+                <input type="text" id="status-display" value="ZESKANUJ QR ZAMÓWIENIA" readonly>
             </div>
-            
-            <button id="btn-action">URUCHOM APARAT</button>
-            <div id="debug-log">Czekam na inicjalizację...</div>
+            <div id="debug-log">Gotowy do skanowania QR</div>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
