@@ -1,15 +1,9 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwiumkpK3vuqsqngYlXlerYcKU8NsbhLsy7ngzO8Fv-gzi19fiqFFNC0ckSWbmISAL7Aw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwn096nSEfnykeCIkZfiK7BBkEOvUpiRG1tQkgew7qVL_efFbu_gpQakNfDTRzUMqEEeg/exec";
 let currentOrderID = null;
 let targetItem = null;
 let isProcessing = false;
 
 const html5QrCode = new Html5Qrcode("reader");
-
-async function fastFetch(params) {
-    const url = `${SCRIPT_URL}?${new URLSearchParams(params)}`;
-    const response = await fetch(url);
-    return await response.json();
-}
 
 async function startQR() {
     isProcessing = false;
@@ -35,9 +29,7 @@ function onScan(text) {
             setCornersColor("#30d158");
             playBeep(880, 100);
             currentOrderID = code;
-            // Aktualizacja tylko wartości numeru
             document.getElementById("order-number-val").innerText = currentOrderID;
-            
             setTimeout(() => {
                 html5QrCode.stop().then(() => {
                     document.getElementById("camera-wrapper").style.display = "none";
@@ -51,18 +43,20 @@ function onScan(text) {
             isProcessing = true;
             setCornersColor("#30d158");
             playBeep(880, 100);
+            
+            // KLUCZOWE: Otwieramy panel ZANIM zatrzymamy skaner, by focus zadziałał
+            if (targetItem.pozostalo > 1) {
+                showQty();
+            }
+
             setTimeout(() => {
                 html5QrCode.stop().then(() => {
                     document.getElementById("camera-wrapper").style.display = "none";
-                    if (targetItem.pozostalo > 1) {
-                        showQty();
-                    } else {
-                        sendVal(1);
-                    }
+                    if (targetItem.pozostalo <= 1) sendVal(1);
                 });
             }, 100);
         } else {
-            showError();
+            showError("BŁĘDNY PRODUKT");
         }
     }
 }
@@ -71,7 +65,7 @@ async function fetchNext() {
     document.getElementById("task-card").style.display = "block";
     document.getElementById("task-nazwa-big").innerText = "Wczytywanie...";
     try {
-        const res = await fastFetch({ orderID: currentOrderID, action: "get_next" });
+        const res = await fetch(`${SCRIPT_URL}?orderID=${currentOrderID}&action=get_next`).then(r => r.json());
         isProcessing = false;
         if (res.status === "next_item") {
             targetItem = res;
@@ -85,53 +79,57 @@ async function fetchNext() {
 }
 
 function showQty() {
-    document.getElementById("qty-panel").style.display = "block";
+    const panel = document.getElementById("qty-panel");
     const input = document.getElementById("qty-input");
-    input.value = ""; // Usunięcie wartości domyślnej
+    const btn = document.getElementById("btn-qty-ok");
     
-    // Agresywne wywołanie klawiatury
-    setTimeout(() => { 
-        input.focus(); 
-        input.click(); 
-    }, 50);
+    btn.classList.remove("clicked");
+    panel.style.display = "block";
+    input.value = "";
+    
+    // Focus musi być wywołany natychmiast
+    input.focus();
+    input.click();
 }
 
 document.getElementById("btn-qty-ok").onclick = function() {
     const val = document.getElementById("qty-input").value;
     if(!val || val <= 0) return;
-    document.getElementById("qty-panel").style.display = "none";
-    sendVal(val);
+    
+    // Animacja przycisku
+    this.classList.add("clicked");
+    
+    setTimeout(() => {
+        document.getElementById("qty-panel").style.display = "none";
+        sendVal(val);
+    }, 150);
 };
 
 async function sendVal(q) {
     try {
-        const res = await fastFetch({ 
-            orderID: currentOrderID, 
-            ean: targetItem.ean, 
-            qty: q, 
-            action: "validate" 
-        });
+        const res = await fetch(`${SCRIPT_URL}?orderID=${currentOrderID}&ean=${targetItem.ean}&qty=${q}&action=validate`).then(r => r.json());
         if (res.status === "success") {
             fetchNext();
         } else {
-            alert(res.msg);
+            showError(res.msg); // Pokazuje "ZŁA ILOŚĆ WYDANIA" bez alertu
             isProcessing = false;
-            showQty();
+            setTimeout(showQty, 1500); // Wraca do wpisywania po pokazaniu błędu
         }
     } catch (e) { isProcessing = false; }
 }
 
-function showError() {
+function showError(msg) {
     isProcessing = true;
     setCornersColor("#ff453a");
     playBeep(200, 600);
     const overlay = document.getElementById("error-overlay");
+    overlay.innerText = msg;
     overlay.style.display = "flex";
     setTimeout(() => {
         overlay.style.display = "none";
         isProcessing = false;
         setCornersColor("white");
-    }, 1200);
+    }, 1500);
 }
 
 function setCornersColor(color) {
