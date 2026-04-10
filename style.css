@@ -1,72 +1,53 @@
-:root {
-    --bg: #000000;
-    --panel: #1c1c1e;
-    --accent: #0a84ff;
-    --success: #30d158;
-    --error: #ff453a;
-    --safe-top: env(safe-area-inset-top);
+/* ... zachowaj root i podstawowe kolory ... */
+
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Blokujemy przewijanie strony */
 }
-
-body {
-    margin: 0; font-family: -apple-system, sans-serif;
-    background: var(--bg); color: white; overflow: hidden;
-}
-
-.app-container { height: 100vh; display: flex; flex-direction: column; }
-
-header {
-    padding-top: calc(var(--safe-top) + 10px);
-    padding-left: 20px; padding-right: 20px; padding-bottom: 15px;
-    background: var(--panel); display: flex; justify-content: space-between; align-items: center;
-}
-
-#order-id-display { margin: 0; font-size: 18px; color: var(--accent); }
 
 #camera-wrapper {
-    position: relative; width: 100%; transition: height 0.4s ease;
-    background: #000; flex-shrink: 0; height: 60vh;
+    position: relative;
+    width: 100%;
+    background: #000;
+    flex-grow: 1; /* Pozwalamy kamerze zająć dostępną przestrzeń... */
+    max-height: 45vh; /* ...ale nie więcej niż 45% wysokości ekranu */
+    overflow: hidden;
 }
 
-.ean-active #camera-wrapper { height: 30vh; }
+/* Kiedy wejdziemy w tryb EAN, możemy jeszcze bardziej zmniejszyć aparat */
+.ean-active #camera-wrapper {
+    max-height: 30vh;
+}
 
-#reader { width: 100% !important; border: none !important; }
-#reader video { object-fit: cover !important; }
+#reader { 
+    width: 100% !important; 
+    height: 100% !important;
+}
 
-/* Usunięto custom-laser - czysty celownik biblioteki */
+#reader video {
+    object-fit: cover !important;
+    height: 100% !important;
+}
 
 .ui-panel {
-    flex-grow: 1; padding: 20px; background: var(--bg); 
-    display: flex; flex-direction: column; justify-content: flex-start;
+    flex-shrink: 0; /* Panel NIE MOŻE się skurczyć ani wypaść poza ekran */
+    padding: 15px;
+    background: var(--bg);
+    min-height: 300px; /* Rezerwujemy miejsce na panel i klawiaturę */
+    z-index: 10;
 }
 
 #status-msg {
-    text-align: center; padding: 18px; border-radius: 12px; background: var(--panel);
-    font-weight: 600; font-size: 16px; margin-bottom: 20px; border: 1px solid #333;
+    margin-bottom: 15px;
+    font-size: 14px;
 }
-
-#qty-section { display: none; flex-direction: column; }
 
 .qty-card {
-    background: var(--panel); padding: 20px; border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: var(--panel);
+    padding: 15px;
+    border-radius: 16px;
+    /* Dodajemy lekkie uniesienie, by było widać, że to interaktywny moduł */
+    border: 1px solid #333;
 }
-
-#scanned-product-name { display: block; color: #8e8e93; font-size: 12px; margin-bottom: 5px; }
-
-.qty-input-group { display: flex; gap: 12px; margin-bottom: 15px; }
-
-#quantity-input {
-    flex: 1; background: #2c2c2e; border: 1px solid #444; border-radius: 12px;
-    color: white; font-size: 32px; text-align: center; padding: 12px;
-}
-
-#btn-confirm-qty {
-    background: var(--success); color: white; border: none;
-    padding: 0 30px; border-radius: 12px; font-weight: bold; font-size: 18px;
-}
-
-#btn-cancel-qty {
-    background: transparent; color: #ff453a; border: none; padding: 10px; font-size: 14px;
-}
-
-#btn-finish { background: transparent; border: 1px solid #444; color: #888; padding: 6px 12px; border-radius: 8px; }
