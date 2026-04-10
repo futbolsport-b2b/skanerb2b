@@ -1,30 +1,82 @@
-/* ... zachowaj poprzednie style ... */
+:root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --error: #ef4444;
+}
+
+body {
+    margin: 0; font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--bg); color: white;
+    display: flex; justify-content: center; height: 100vh;
+}
+
+.app-container {
+    width: 100%; max-width: 480px; display: flex; flex-direction: column; background: var(--bg);
+}
+
+header {
+    padding: 15px; display: flex; justify-content: space-between; align-items: center;
+    background: var(--panel); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+/* Zmniejszone okno aparatu */
+#reader { 
+    width: 100% !important; 
+    max-height: 250px; /* Ograniczenie wysokości */
+    background: #000; 
+    border: none !important;
+}
+
+/* FIX CELOWNIKA: Wymuszenie kształtu linii dla EAN */
+.ean-mode #reader__scan_region {
+    height: 60px !important;
+    width: 80% !important;
+    top: 50% !important;
+    left: 10% !important;
+    transform: translateY(-50%) !important;
+    border: 2px solid var(--success) !important;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+.ean-mode #reader__scan_region::after {
+    content: ""; position: absolute; top: 50%; left: 0; width: 100%;
+    height: 2px; background: red; box-shadow: 0 0 8px red;
+}
+
+/* Panel sterowania pod skanerem */
+.ui-panel {
+    flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+}
+
+#status-display {
+    width: 100%; background: #334155; border: 1px solid #475569; color: #f8fafc;
+    padding: 15px; font-size: 1rem; text-align: center; border-radius: 12px;
+    font-weight: 600; box-sizing: border-box;
+}
+
+/* Sekcja wprowadzania ilości (Inline) */
+#qty-section {
+    display: none; background: var(--panel); padding: 20px; border-radius: 16px;
+    border: 2px solid var(--accent); animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.qty-controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+
+#quantity-input {
+    flex-grow: 1; background: #0f172a; border: 1px solid #334155; color: white;
+    font-size: 2rem; text-align: center; padding: 10px; border-radius: 8px;
+}
+
+.btn-confirm {
+    background: var(--success); color: white; border: none; padding: 15px 25px;
+    border-radius: 8px; font-weight: bold; cursor: pointer;
+}
 
 #btn-finish {
-    background: var(--error); color: white; border: none;
-    padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer;
-}
-
-/* MODAL */
-.modal {
-    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-    width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-    justify-content: center; align-items: center;
-}
-.modal-content {
-    background: #1e1e1e; padding: 25px; border-radius: 12px;
-    width: 80%; max-width: 300px; text-align: center; border: 1px solid #444;
-}
-#quantity-input {
-    width: 100%; padding: 15px; margin: 15px 0; font-size: 2rem;
-    background: #333; border: 1px solid #555; color: white; text-align: center;
-}
-.modal-buttons { display: flex; gap: 10px; }
-#btn-confirm-qty { flex: 2; padding: 15px; background: var(--success); border: none; color: white; font-weight: bold; }
-#btn-cancel-qty { flex: 1; padding: 15px; background: #444; border: none; color: white; }
-
-/* Celownik EAN */
-.ean-mode #reader__scan_region {
-    height: 120px !important; top: 50% !important; transform: translateY(-50%);
-    border: 3px solid var(--success) !important;
+    background: rgba(239, 68, 68, 0.2); color: var(--error); border: 1px solid var(--error);
+    padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;
 }
