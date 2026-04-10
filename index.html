@@ -3,51 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B PRO SCAN v16</title>
-    <link rel="stylesheet" href="style.css?v=16">
+    <title>B2B ULTRA-SPEED</title>
+    <link rel="stylesheet" href="style.css?v=18">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
-    <div id="error-overlay">NIEWŁAŚCIWY KOD PRODUKTU</div>
-    
+    <div id="error-overlay">BŁĘDNY PRODUKT</div>
     <div class="app-container">
         <header>
             <div id="header-info">
                 <span id="label-status">TERMINAL MAGAZYNOWY</span>
                 <div id="order-title">ZESKANUJ DOKUMENT</div>
             </div>
-            <button id="btn-finish" style="display:none;">ZAKOŃCZ</button>
+            <button id="btn-finish-icon" style="display:none;">✖</button>
         </header>
-
         <div id="camera-wrapper">
             <div id="reader"></div>
             <div id="scanner-ui-overlay">
-                <div class="corner tl"></div>
-                <div class="corner tr"></div>
-                <div class="corner bl"></div>
-                <div class="corner br"></div>
+                <div class="corner tl"></div><div class="corner tr"></div>
+                <div class="corner bl"></div><div class="corner br"></div>
                 <div id="laser-line"></div>
             </div>
         </div>
-
         <div class="ui-panel">
             <div id="task-card" style="display: none;">
-                <h1 id="task-nazwa-big">Ładowanie...</h1>
+                <h1 id="task-nazwa-big">Wczytywanie...</h1>
                 <div id="task-kat-val">KATALOG: ---</div>
                 <div class="task-qty-label">ILOŚĆ ZAMÓWIENIA</div>
                 <div id="task-qty-val">0</div>
                 <button id="btn-scan-item">SKANUJ PRODUKT</button>
             </div>
-
             <div id="qty-panel">
                 <div class="qty-box">
                     <input type="number" id="qty-input" inputmode="decimal">
                     <button id="btn-qty-ok">✔</button>
                 </div>
             </div>
-            <div id="status-footer">Gotowy do pracy</div>
         </div>
     </div>
-    <script src="app.js?v=16"></script>
+    <script src="app.js?v=18"></script>
 </body>
 </html>
