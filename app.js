@@ -1,7 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkhZWRqRuVNqGsUv-hZ0kqVfsnRgBbqEVUsTMfLADsGA0qjaxy6oRh9QzTCQ4nCZt9MA/exec";
 
 
-
 let currentOrderID = null;
 let lastScannedEAN = null;
 let isProcessing = false; // Nowa flaga zamiast pause()
@@ -20,10 +19,10 @@ async function startScanner(isEanMode = false) {
     html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
 }
 
-function onScanSuccess(decodedText) {
-    // Jeśli system przetwarza poprzedni skan, ignorujemy nowe odczyty
-    if (isProcessing) return;
+/* ... stałe bez zmian ... */
 
+function onScanSuccess(decodedText) {
+    if (isProcessing) return;
     const code = decodedText.trim();
 
     // 1. SKAN QR ZAMÓWIENIA
@@ -32,31 +31,39 @@ function onScanSuccess(decodedText) {
         currentOrderID = code;
         document.body.classList.add("ean-active");
         document.getElementById("order-id-display").innerText = currentOrderID;
-        updateStatus("Zalogowano pomyślnie.");
-        playBeep(880, 150);
+        updateStatus("Zalogowano. Skanuj towar.");
+        playBeep(880, 100);
         
         setTimeout(() => {
             isProcessing = false;
             startScanner(true);
-        }, 1000);
+        }, 800);
         return;
     }
 
     // 2. SKAN EAN PRODUKTU
     if (currentOrderID && code !== currentOrderID) {
-        isProcessing = true; // Blokujemy kolejne odczyty bez zamrażania kamery
+        isProcessing = true;
         lastScannedEAN = code;
         
-        document.getElementById("scanned-product-name").innerText = "EAN: " + code;
-        document.getElementById("qty-section").style.display = "flex";
-        document.getElementById("quantity-input").value = 1;
-        document.getElementById("quantity-input").focus();
+        document.getElementById("scanned-product-name").innerText = "PRODUKT: " + code;
         
-        updateStatus("Podaj ilość...");
+        // Zamiast flex, używamy block dla lepszej stabilności
+        const qtySection = document.getElementById("qty-section");
+        qtySection.style.display = "block"; 
+        
+        const input = document.getElementById("quantity-input");
+        input.value = 1;
+        
+        // Przewijamy panel do widoku, gdyby klawiatura go zasłoniła
+        setTimeout(() => input.focus(), 100);
+        
+        updateStatus("Podaj ilość");
         playBeep(600, 100);
     }
 }
 
+/* ... reszta funkcji bez zmian ... */
 function updateStatus(msg) {
     document.getElementById("status-msg").innerText = msg;
 }
