@@ -1,20 +1,20 @@
-:root { --bg: #000; --panel: #1c1c1e; --accent: #0a84ff; --success: #30d158; --success-active: #0a4d1e; --error: #ff453a; }
+:root { --bg: #000; --panel: #1c1c1e; --accent: #0a84ff; --success: #30d158; --success-active: #0a4d1e; --error: #ff453a; --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom); }
 body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: white; overflow: hidden; height: 100dvh; }
 .app-container { height: 100dvh; display: flex; flex-direction: column; }
 
-header { padding: calc(env(safe-area-inset-top) + 12px) 20px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+header { padding: calc(var(--safe-top) + 12px) 20px 12px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; z-index: 10; }
 #order-number-val { font-size: 17px; font-weight: bold; color: var(--success); }
 #btn-finish-icon { background: var(--error); color: white; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 18px; display: flex; align-items: center; justify-content: center; }
 
-/* SKANER */
+/* SKANER I RAMKI */
 #camera-wrapper { position: relative; width: 100%; height: 50vh; background: #000; overflow: hidden; transition: height 0.3s; }
 .ean-mode #camera-wrapper { height: 35vh; }
 #reader { width: 100% !important; height: 100% !important; border: none !important; }
 
-#scanner-ui-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; pointer-events: none; transition: all 0.2s; }
-.ean-mode #scanner-ui-overlay { width: 300px; height: 100px; }
+#scanner-ui-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; pointer-events: none; }
+.ean-mode #scanner-ui-overlay { width: 320px; height: 120px; }
 
-.corner { position: absolute; width: 30px; height: 30px; border: 4px solid white; transition: border-color 0.2s; }
+.corner { position: absolute; width: 30px; height: 30px; border: 4px solid white; transition: border-color 0.15s; }
 .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
 .corner.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
@@ -24,10 +24,11 @@ header { padding: calc(env(safe-area-inset-top) + 12px) 20px; background: var(--
 .ean-mode #laser-line { display: block; }
 
 /* UI ZADANIA */
+.ui-panel { flex-grow: 1; padding: 15px; position: relative; }
 .nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .nav-btn { background: #333; color: white; border: none; width: 45px; height: 45px; border-radius: 10px; font-size: 20px; }
-#task-order-label { font-size: 15px; color: #fff; }
-#task-lp-val { font-size: 17px; }
+#task-order-label { font-size: 14px; color: #fff; }
+#task-lp-val { font-size: 16px; font-weight: 900; }
 
 #task-card { background: var(--panel); border-radius: 20px; padding: 20px; text-align: center; border: 1px solid #333; }
 #task-nazwa-big { font-size: 26px; font-weight: 800; margin-bottom: 5px; line-height: 1.1; }
@@ -35,15 +36,18 @@ header { padding: calc(env(safe-area-inset-top) + 12px) 20px; background: var(--
 #task-qty-val { font-size: 60px; font-weight: 900; color: var(--success); margin: 5px 0 15px 0; }
 #btn-scan-item { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 15px; font-size: 19px; font-weight: bold; }
 
-/* PANEL ILOŚCI */
-#qty-panel { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #2c2c2e; padding: 20px; border-top: 1px solid #444; z-index: 2000; }
-.qty-info-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px; }
-#qty-kat-info { font-weight: 900; font-size: 18px; color: var(--accent); margin-bottom: 5px; }
-#qty-remain-info { color: #fff; font-size: 14px; font-weight: bold; }
+/* PANEL ILOŚCI (Pancerny Design) */
+#qty-panel { display: none; position: fixed; inset: auto 0 0 0; background: #1c1c1e; border-top: 2px solid #333; padding: 20px 20px calc(var(--safe-bottom) + 20px); z-index: 2000; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); }
+.qty-header { text-align: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+#qty-nazwa-info { font-weight: bold; font-size: 18px; color: white; margin-bottom: 5px; }
+#qty-kat-info { font-weight: 900; font-size: 16px; color: var(--accent); }
+#qty-remain-info { color: var(--success); font-size: 13px; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
 
-.qty-box { display: flex; justify-content: center; gap: 15px; }
-#qty-input { width: 120px; height: 80px; background: #000; border: 2px solid var(--accent); border-radius: 15px; color: white; font-size: 42px; text-align: center; }
-#btn-qty-ok { width: 100px; height: 80px; background: var(--success); border: none; border-radius: 15px; font-size: 32px; color: white; transition: 0.2s; }
-#btn-qty-ok.loading { background: var(--success-active); transform: scale(0.95); }
+.qty-box-pancerna { display: flex; justify-content: center; gap: 15px; }
+#qty-input { width: 130px; height: 85px; background: #000; border: 2px solid var(--accent); border-radius: 15px; color: white; font-size: 48px; text-align: center; }
+#btn-qty-ok { flex-grow: 1; height: 85px; background: var(--success); border: none; border-radius: 15px; font-size: 24px; font-weight: bold; color: white; transition: 0.2s; }
+#btn-qty-ok.loading { background: var(--success-active); transform: scale(0.98); pointer-events: none; }
 
-#error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 69, 58, 0.98); z-index: 9999; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; color: white; }
+#btn-qty-cancel { width: 100%; background: transparent; color: #8e8e93; border: none; margin-top: 15px; font-size: 14px; padding: 10px; }
+
+#error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 69, 58, 0.98); z-index: 9999; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; color: white; text-align: center; padding: 20px; }
