@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>B2B SCANNER PRO</title>
+    <title>B2B TERMINAL PRO</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
-            <div class="logo">TERMINAL B2B</div>
-            <div id="order-badge" class="badge-waiting">OCZEKIWANIE NA QR</div>
+            <div id="order-badge" class="badge-waiting">BRAK ZAMÓWIENIA</div>
+            <button id="btn-finish" style="display:none;">ZAKOŃCZ</button>
         </header>
 
-        <div id="reader" style="width: 100%; min-height: 300px;"></div>
+        <div id="reader"></div>
 
         <div class="ui-panel">
-            <div class="info-box">
-                <input type="text" id="status-display" value="ZESKANUJ QR ZAMÓWIENIA" readonly>
-            </div>
-            <div id="debug-log">Gotowy do skanowania QR</div>
+            <input type="text" id="status-display" value="ZESKANUJ QR ZAMÓWIENIA" readonly>
+            <div id="debug-log">Inicjalizacja systemu...</div>
         </div>
     </div>
+
+    <div id="quantity-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-product-name">Produkt</h3>
+            <p>Ile sztuk pakujesz?</p>
+            <input type="number" id="quantity-input" value="1" min="1">
+            <div class="modal-buttons">
+                <button id="btn-confirm-qty">ZATWIERDŹ</button>
+                <button id="btn-cancel-qty">ANULUJ</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
