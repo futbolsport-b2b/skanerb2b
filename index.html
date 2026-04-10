@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B SCAN v14</title>
-    <link rel="stylesheet" href="style.css?v=14">
+    <title>B2B SCAN v15</title>
+    <link rel="stylesheet" href="style.css?v=15">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
+    <div id="error-overlay">NIEWŁAŚCIWY KOD PRODUKTU</div>
+    
     <div class="app-container">
         <header>
-            <div id="header-left">
-                <span id="label-top">SYSTEM B2B</span>
+            <div id="header-info">
+                <span id="label-status">SYSTEM GOTOWY</span>
                 <div id="order-title">SKANUJ ZAMÓWIENIE</div>
             </div>
-            <button id="btn-finish-order" style="display:none;">ZAKOŃCZ</button>
+            <button id="btn-finish" style="display:none;">ZAKOŃCZ</button>
         </header>
 
         <div id="camera-wrapper">
@@ -24,22 +26,22 @@
 
         <div class="ui-panel">
             <div id="task-card" style="display: none;">
-                <div class="task-header">POZYCJA LP: <span id="task-lp">-</span></div>
-                <div id="task-nazwa">NAZWA PRODUKTU</div>
-                <div id="task-kat">NR KAT: -</div>
-                <div id="task-qty-info">DO WYDANIA: <span id="task-qty">-</span></div>
-                <button id="btn-trigger-scan">SKANUJ PRODUKT</button>
+                <div class="task-lp">POZYCJA LP: <span id="task-lp-val">-</span></div>
+                <div id="task-nazwa">Ładowanie...</div>
+                <div id="task-kat">KAT: -</div>
+                <div id="task-qty-info">DO WYDANIA: <span id="task-qty-val">-</span></div>
+                <button id="btn-scan-item">SKANUJ PRODUKT</button>
             </div>
 
             <div id="qty-panel">
-                <div class="qty-container">
-                    <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric" value="1">
-                    <button id="btn-confirm-qty">✔</button>
+                <div class="qty-box">
+                    <input type="number" id="qty-input" inputmode="decimal" pattern="[0-9]*">
+                    <button id="btn-qty-ok">✔</button>
                 </div>
             </div>
-            <div id="status-msg">Gotowy do pracy</div>
+            <div id="status-footer">Czekam na kod QR...</div>
         </div>
     </div>
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
 </body>
 </html>
