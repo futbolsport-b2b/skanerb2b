@@ -6,84 +6,74 @@ const statusDisplay = document.getElementById('status-display');
 const orderBadge = document.getElementById('order-badge');
 const debugLog = document.getElementById('debug-log');
 const btnFinish = document.getElementById('btn-finish');
-const modal = document.getElementById('quantity-modal');
+const qtySection = document.getElementById('qty-section');
 const qtyInput = document.getElementById('quantity-input');
 
 const html5QrCode = new Html5Qrcode("reader");
 
-// Inicjalizacja skanera
-html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess);
+// Start systemu
+html5QrCode.start(
+    { facingMode: "environment" }, 
+    { fps: 15, qrbox: { width: 200, height: 200 } }, 
+    onScanSuccess
+);
 
 function onScanSuccess(decodedText) {
     const code = decodedText.trim();
 
-    // KROK 1: LOGOWANIE ZAMÓWIENIA
-    if (!currentOrderID) {
-        if (code.includes("/") || code.includes("DHH")) {
-            currentOrderID = code;
-            orderBadge.innerText = "ZAM: " + currentOrderID;
-            orderBadge.className = "badge-active";
-            btnFinish.style.display = "block";
-            statusDisplay.value = "ZALOGOWANO. SKANUJ EAN";
-            document.getElementById('reader').classList.add("ean-mode");
-            playBeep(880, 100);
-        }
+    // 1. ZAMÓWIENIE (QR)
+    if (!currentOrderID && (code.includes("/") || code.includes("DHH"))) {
+        currentOrderID = code;
+        orderBadge.innerText = "SESJA: " + currentOrderID;
+        orderBadge.className = "badge-active";
+        btnFinish.style.display = "block";
+        statusDisplay.value = "GOTOWY DO SKANOWANIA EAN";
+        
+        // Przełączenie celownika na linię
+        document.getElementById('reader').classList.add("ean-mode");
+        playBeep(880, 100);
         return;
     }
 
-    // KROK 2: SKANOWANIE PRODUKTU - OTWARCIE OKNA ILOŚCI
+    // 2. PRODUKT (EAN) - Pokazanie pól pod skanerem
     if (currentOrderID && code !== currentOrderID) {
         html5QrCode.pause();
         lastScannedEAN = code;
-        qtyInput.value = 1; // domyślnie 1
-        modal.style.display = "flex";
-        qtyInput.focus();
+        
+        statusDisplay.value = "PRODUKT: " + code;
+        qtySection.style.display = "block"; // Pokaż sekcję ilości zamiast modala
+        qtyInput.value = 1;
+        qtyInput.select();
+        playBeep(600, 100);
     }
 }
 
-// Obsługa przycisku ZATWIERDŹ ILOŚĆ
 document.getElementById('btn-confirm-qty').addEventListener('click', () => {
     const qty = qtyInput.value;
-    modal.style.display = "none";
-    statusDisplay.value = "PRZESYŁANIE: " + qty + " szt...";
+    qtySection.style.display = "none";
+    statusDisplay.value = "WYSYŁANIE...";
 
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(lastScannedEAN)}&qty=${qty}`)
         .then(res => res.json())
         .then(result => {
             statusDisplay.value = result.msg;
             if (result.status === "success") {
-                flashUI("#28a745");
+                document.body.style.background = "#064e3b";
                 playBeep(880, 200);
             } else {
-                flashUI("#dc3545");
+                document.body.style.background = "#7f1d1d";
                 playBeep(200, 500);
             }
-            setTimeout(() => html5QrCode.resume(), 1500);
+            setTimeout(() => {
+                document.body.style.background = "#0f172a";
+                html5QrCode.resume();
+            }, 1500);
         });
 });
 
-// Obsługa przycisku ZAKOŃCZ
 btnFinish.addEventListener('click', () => {
-    if(confirm("Czy zakończyć obsługę zamówienia " + currentOrderID + "?")) {
-        currentOrderID = null;
-        orderBadge.innerText = "BRAK ZAMÓWIENIA";
-        orderBadge.className = "badge-waiting";
-        btnFinish.style.display = "none";
-        statusDisplay.value = "ZESKANUJ QR ZAMÓWIENIA";
-        document.getElementById('reader').classList.remove("ean-mode");
-        html5QrCode.resume();
-    }
+    location.reload(); // Najczystszy sposób na reset całego interfejsu
 });
-
-document.getElementById('btn-cancel-qty').addEventListener('click', () => {
-    modal.style.display = "none";
-    html5QrCode.resume();
-});
-
-function flashUI(color) {
-    document.body.style.backgroundColor = color;
-    setTimeout(() => document.body.style.backgroundColor = "#121212", 1000);
-}
 
 function playBeep(f, d) {
     const c = new AudioContext();
