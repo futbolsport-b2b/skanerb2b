@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiqacaq2aSakr6YOZm3W9wXXGrWibtWOn13yuFbKlqFfo3BrsvQcZIBaIKTUCWTZg9OQ/exec"; // Zmień na swój URL Google lub PHP
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGSBUU806dL7-yiPaEOiBXod249-KXacWs-w6prEY1l00jDPQU4RZ7XJtM2Wc9sD2hbQ/exec"; 
 let currentOrderID = null;
 let currentOffset = 0;
 let targetItem = null;
@@ -6,13 +6,11 @@ let isProcessing = false;
 
 const html5QrCode = new Html5Qrcode("reader");
 
-// PROTOKÓŁ HARD RESET - CZYŚCI "DUCHY" DANYCH
+// PROTOKÓŁ RESETU
 function resetProductUI() {
     isProcessing = true; 
     const card = document.getElementById("task-card");
     card.classList.add("loading-state");
-    
-    // FIZYCZNE USUNIĘCIE STARYCH TEKSTÓW
     document.getElementById("task-nazwa-big").innerText = "Wczytywanie...";
     document.getElementById("task-kat-val").innerText = "KATALOG: ---";
     document.getElementById("task-qty-val").innerText = "--";
@@ -37,22 +35,25 @@ function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
 
+    // 1. ROZPOZNANIE ZAMÓWIENIA (Każdy pierwszy skan)
     if (!currentOrderID) {
-        if (code.includes("/") || code.includes("DHH")) {
-            isProcessing = true;
-            setCornersColor("#30d158");
-            playBeep(880, 100);
-            currentOrderID = code;
-            document.getElementById("order-number-val").innerText = currentOrderID;
-            setTimeout(() => {
-                html5QrCode.stop().then(() => {
-                    document.getElementById("camera-wrapper").style.display = "none";
-                    document.getElementById("btn-finish-icon").style.display = "flex";
-                    fetchNext(0);
-                });
-            }, 200);
-        }
-    } else if (code === targetItem.ean) {
+        isProcessing = true;
+        setCornersColor("#30d158");
+        playBeep(880, 100);
+        currentOrderID = code;
+        document.getElementById("order-number-val").innerText = currentOrderID;
+        setTimeout(() => {
+            html5QrCode.stop().then(() => {
+                document.getElementById("camera-wrapper").style.display = "none";
+                document.getElementById("btn-finish-icon").style.display = "flex";
+                fetchNext(0);
+            });
+        }, 150);
+        return;
+    }
+
+    // 2. ROZPOZNANIE EAN
+    if (code === targetItem.ean) {
         isProcessing = true;
         setCornersColor("#30d158");
         playBeep(880, 100);
@@ -62,27 +63,26 @@ function onScan(text) {
                 if (targetItem.pozostalo > 1) showQty();
                 else sendVal(1);
             });
-        }, 200);
+        }, 150);
     } else {
         showError("BŁĘDNY PRODUKT", "#ff453a");
     }
 }
 
 async function fetchNext(offset) {
-    resetProductUI(); // NATYCHMIASTOWE CZYSZCZENIE PRZED ZAPYTANIEM
+    resetProductUI(); 
     currentOffset = offset;
     try {
-        const res = await fetch(`${SCRIPT_URL}?orderID=${currentOrderID}&action=get_next&offset=${offset}`).then(r => r.json());
+        const url = `${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`;
+        const res = await fetch(url).then(r => r.json());
+        
         if (res.status === "next_item") {
             targetItem = res.item;
             currentOffset = res.current_offset;
-            
-            // WYPEŁNIANIE NOWYCH DANYCH
             document.getElementById("task-lp-val").innerText = targetItem.lp;
             document.getElementById("task-nazwa-big").innerText = targetItem.nazwa;
             document.getElementById("task-kat-val").innerText = "KATALOG: " + targetItem.nr_kat;
             document.getElementById("task-qty-val").innerText = targetItem.pozostalo;
-            
             document.getElementById("task-card").classList.remove("loading-state");
             isProcessing = false;
         } else {
@@ -107,13 +107,13 @@ document.getElementById("btn-qty-ok").onclick = function() {
     const val = document.getElementById("qty-input").value;
     if(!val || val <= 0) return;
     this.classList.add("loading");
-    resetProductUI(); // Czyścimy kartę w tle przed zamknięciem panelu
     sendVal(val);
 };
 
 async function sendVal(q) {
     try {
-        const res = await fetch(`${SCRIPT_URL}?orderID=${currentOrderID}&ean=${targetItem.ean}&qty=${q}&action=validate`).then(r => r.json());
+        const url = `${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`;
+        const res = await fetch(url).then(r => r.json());
         if (res.status === "success") {
             document.getElementById("qty-panel").style.display = "none";
             fetchNext(currentOffset);
