@@ -94,14 +94,19 @@ function showQty() {
     const input = document.getElementById("qty-input");
     const btn = document.getElementById("btn-qty-ok");
     
-    // Wypełnij dane w pancernej karcie ilości
+    // Wypełnij dane w nowoczesnym panelu ilości
     document.getElementById("qty-nazwa-info").innerText = targetItem.nazwa;
-    document.getElementById("qty-kat-info").innerHTML = `Nr Kat: <span id="kat-val-display">${targetItem.nr_kat}</span>`;
+    document.getElementById("kat-val-display").innerText = targetItem.nr_kat;
     document.getElementById("qty-remain-val").innerText = targetItem.pozostalo;
     
+    // Upewnij się, że przycisk nie jest w stanie ładowania
     btn.classList.remove("loading");
-    panel.style.display = "block";
-    input.value = ""; // Puste pole
+    
+    // Flex jest potrzebny do poprawnego pozycjonowania modala
+    panel.style.display = "flex";
+    
+    // Puste pole
+    input.value = "";
     
     // Agresywny focus dla iOS
     requestAnimationFrame(() => {
@@ -129,13 +134,15 @@ async function sendVal(q) {
             document.getElementById("qty-panel").style.display = "none";
             fetchNext(currentOffset);
         } else {
-            // Obsługa błędu ilościowego ("PRZEKROCZONO ILOŚĆ")
+            // Obsługa błędu, usuwamy spinner z przycisku
             document.getElementById("btn-qty-ok").classList.remove("loading");
             showError(res.msg, "#ff453a");
             isProcessing = false;
-            // Panel ilości ZOSTAJE OTWARTY, by poprawić liczbę
         }
-    } catch (e) { isProcessing = false; }
+    } catch (e) { 
+        isProcessing = false; 
+        document.getElementById("btn-qty-ok").classList.remove("loading");
+    }
 }
 
 function showError(msg, cornerColor) {
