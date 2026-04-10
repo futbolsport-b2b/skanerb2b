@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B ULTRA v19</title>
-    <link rel="stylesheet" href="style.css?v=19">
+    <title>B2B SCAN v20</title>
+    <link rel="stylesheet" href="style.css?v=20">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
     <div id="error-overlay">BŁĘDNY PRODUKT</div>
+    
     <div class="app-container">
         <header>
             <div id="header-info">
@@ -20,6 +21,7 @@
             </div>
             <button id="btn-finish-icon" style="display:none;">✖</button>
         </header>
+
         <div id="camera-wrapper">
             <div id="reader"></div>
             <div id="scanner-ui-overlay">
@@ -28,6 +30,7 @@
                 <div id="laser-line"></div>
             </div>
         </div>
+
         <div class="ui-panel">
             <div id="task-card" style="display: none;">
                 <h1 id="task-nazwa-big">Wczytywanie...</h1>
@@ -36,6 +39,7 @@
                 <div id="task-qty-val">0</div>
                 <button id="btn-scan-item">SKANUJ PRODUKT</button>
             </div>
+
             <div id="qty-panel">
                 <div class="qty-box">
                     <input type="number" id="qty-input" inputmode="numeric" pattern="[0-9]*" placeholder="0">
@@ -44,6 +48,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>
