@@ -1,57 +1,80 @@
-:root { --bg: #000; --card: #1c1c1e; --accent: #0a84ff; --success: #30d158; --error: #ff453a; --font: 'Inter', sans-serif; }
+:root { 
+    --bg: #000; --card: #1c1c1e; --accent: #0a84ff; 
+    --success: #30d158; --error: #ff3b30; --font: 'Inter', sans-serif; 
+}
+
 body { margin: 0; font-family: var(--font); background: var(--bg); color: #fff; overflow: hidden; height: 100dvh; }
 .app-container { height: 100dvh; display: flex; flex-direction: column; }
 
-header { padding: calc(env(safe-area-inset-top) + 10px) 20px 15px; background: #111; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-.label { font-size: 10px; color: #666; letter-spacing: 1px; }
-#order-title { font-size: 16px; font-weight: 700; }
+header { 
+    padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; 
+    background: #111; display: flex; justify-content: space-between; align-items: center; 
+    border-bottom: 1px solid #222; 
+}
+.label { font-size: 10px; color: #666; letter-spacing: 1.2px; font-weight: 600; }
+#order-title { font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px; }
 #order-val { color: var(--success); }
-#btn-finish-icon { background: var(--error); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-weight: 900; }
 
-/* DYNAMICZNY SKANER */
+/* PROFESJONALNY PRZYCISK ZAMKNIJ */
+#btn-finish-icon { 
+    background: rgba(255, 59, 48, 0.15); border: 1.5px solid rgba(255, 59, 48, 0.3); 
+    color: var(--error); width: 42px; height: 42px; border-radius: 12px; 
+    font-size: 22px; font-weight: 400; cursor: pointer; display: flex; 
+    align-items: center; justify-content: center; transition: all 0.2s;
+}
+#btn-finish-icon:active { background: var(--error); color: #fff; transform: scale(0.9); }
+
+/* KAMERA I KOMUNIKATY */
 #camera-section { position: relative; width: 100%; height: 50vh; background: #000; overflow: hidden; }
 #reader { width: 100% !important; height: 100% !important; }
 
+#scanner-instruction {
+    position: absolute; top: 15px; left: 0; right: 0; z-index: 20; 
+    text-align: center; font-size: 14px; color: #aaa; font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+#target-kat-display { font-size: 26px; color: var(--accent); font-weight: 900; line-height: 1.2; }
+
 #scanner-visual { 
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+    position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); 
     z-index: 10; pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Stan QR (Zamówienie) - Duży kwadrat */
-.qr-mode #scanner-visual { width: 260px; height: 260px; }
-.qr-mode #laser { display: none; }
+.qr-mode #scanner-visual { width: 250px; height: 250px; }
+.ean-mode #scanner-visual { width: 320px; height: 110px; }
 
-/* Stan EAN (Produkt) - Płaski prostokąt */
-.ean-mode #scanner-visual { width: 320px; height: 120px; }
-.ean-mode #laser { display: block; }
-
-.corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 3px; transition: border-color 0.15s; }
+.corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; transition: border-color 0.15s; }
 .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
 .corner.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
 .corner.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
 
-#laser { position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: red; box-shadow: 0 0 10px red; }
+#laser { position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: red; box-shadow: 0 0 10px red; display: none; }
+.ean-mode #laser { display: block; }
 
-/* INTERFEJS */
+/* RESZTA UI */
 .content-panel { flex-grow: 1; padding: 15px; }
-#task-card { background: var(--card); border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.loading-state #data-container { filter: blur(10px); opacity: 0.2; }
-.nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.nav-btn { background: #333; border: none; color: #fff; width: 44px; height: 44px; border-radius: 12px; font-size: 20px; }
-#task-name { font-size: 24px; font-weight: 800; margin: 10px 0; }
+#task-card { background: var(--card); border-radius: 24px; padding: 25px; text-align: center; border: 1px solid #333; }
+.loading-state #data-container { filter: blur(12px); opacity: 0.1; }
+
+.nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.nav-btn { background: #2c2c2e; border: 1px solid #3a3a3c; color: #fff; width: 48px; height: 48px; border-radius: 14px; font-size: 20px; }
+.pos-label { font-size: 13px; color: #888; font-weight: 600; }
+
+#task-name { font-size: 26px; font-weight: 800; margin-bottom: 8px; line-height: 1.1; }
 #task-kat { font-size: 20px; color: var(--accent); font-weight: 700; }
-.qty-badge { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; margin: 15px 0; }
-#task-qty { font-size: 60px; font-weight: 900; color: var(--success); }
-#btn-scan-item { width: 100%; padding: 20px; background: var(--accent); border: none; border-radius: 15px; color: #fff; font-size: 19px; font-weight: 800; }
+.qty-badge { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; margin: 20px 0; border: 1px solid #222; }
+#task-qty { font-size: 65px; font-weight: 900; color: var(--success); }
 
-#qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; align-items: flex-end; }
-.modal-body { background: #1c1c1e; width: 100%; border-radius: 25px 25px 0 0; padding: 20px 20px calc(env(safe-area-inset-bottom) + 20px); }
-.remain-tag { background: rgba(48,209,88,0.1); color: var(--success); text-align: center; padding: 10px; border-radius: 12px; margin: 15px 0; font-weight: 700; }
+#btn-scan-item { width: 100%; padding: 20px; background: var(--accent); border: none; border-radius: 18px; color: #fff; font-size: 19px; font-weight: 800; }
+
+#qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 2000; align-items: flex-end; }
+.modal-body { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); }
+.remain-tag { background: rgba(48,209,88,0.1); color: var(--success); text-align: center; padding: 12px; border-radius: 14px; margin: 15px 0; font-weight: 700; }
+
 .input-row { display: flex; gap: 15px; }
-#qty-input { width: 120px; height: 80px; background: #000; border: 2px solid var(--accent); border-radius: 15px; color: #fff; font-size: 42px; text-align: center; outline: none; }
-#btn-qty-ok { flex-grow: 1; background: var(--success); border: none; border-radius: 15px; color: #fff; font-size: 32px; font-weight: 900; }
-#btn-qty-cancel { width: 100%; background: transparent; color: #555; border: none; padding: 15px; margin-top: 10px; font-weight: 600; }
+#qty-input { width: 130px; height: 85px; background: #000; border: 2px solid var(--accent); border-radius: 18px; color: #fff; font-size: 42px; text-align: center; outline: none; }
+#btn-qty-ok { flex-grow: 1; background: var(--success); border: none; border-radius: 18px; color: #fff; font-size: 32px; font-weight: 900; }
 
-#error-overlay { display: none; position: fixed; inset: 0; background: rgba(255,69,58,0.95); z-index: 9999; justify-content: center; align-items: center; }
-#error-text { font-size: 32px; font-weight: 900; color: #fff; text-align: center; }
+#error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 59, 48, 0.95); z-index: 9999; justify-content: center; align-items: center; }
+#error-text { font-size: 32px; font-weight: 900; color: #fff; }
