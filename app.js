@@ -2,32 +2,30 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwL9WvrgYCGl4q_Drdh3
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
+function setCornersColor(color) {
+    document.querySelectorAll('.corner').forEach(el => el.style.borderColor = color);
+}
+
 function resetProductUI() {
     isProcessing = true;
     document.getElementById("task-panel").style.opacity = "0.3";
-    document.getElementById("task-name").innerText = "Wczytywanie...";
-    document.getElementById("task-kat").innerText = "---";
-    document.getElementById("task-qty").innerText = "--";
-    document.getElementById("task-lp").innerText = "--";
 }
 
 async function startQR() {
     isProcessing = false;
-    document.body.classList.remove("ean-mode");
-    document.body.classList.add("qr-mode");
+    document.body.className = "qr-mode"; // Wymuś klasę QR
     document.getElementById("scanner-instruction").style.display = "none";
     setCornersColor("white");
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: 240 }, onScan);
+    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
 async function startEAN() {
     isProcessing = false;
-    document.body.classList.remove("qr-mode");
-    document.body.classList.add("ean-mode");
+    document.body.className = "ean-mode"; // Wymuś klasę EAN
     document.getElementById("target-kat-display").innerText = targetItem.nr_kat;
     document.getElementById("scanner-instruction").style.display = "block";
     setCornersColor("white");
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: {width: 310, height: 120} }, onScan);
+    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
 function onScan(text) {
@@ -54,7 +52,6 @@ function onScan(text) {
         setTimeout(() => {
             html5QrCode.stop().then(() => {
                 document.getElementById("scanner-box").style.display = "none";
-                document.getElementById("scanner-instruction").style.display = "none";
                 if (targetItem.pozostalo > 1) showQty();
                 else sendVal(1);
             });
@@ -94,7 +91,7 @@ function showQty() {
     m.style.display = "flex";
     const i = document.getElementById("qty-input");
     i.value = "";
-    setTimeout(() => { i.focus(); i.click(); }, 100);
+    setTimeout(() => { i.focus(); i.click(); }, 150);
 }
 
 function sendVal(q) {
@@ -118,10 +115,6 @@ function showError(m) {
     document.getElementById("error-text").innerText = m;
     o.style.display = "flex";
     setTimeout(() => { o.style.display = "none"; isProcessing = false; setCornersColor("white"); }, 1500);
-}
-
-function setCornersColor(c) { 
-    document.querySelectorAll('.corner').forEach(e => e.style.borderColor = c); 
 }
 
 document.getElementById("btn-qty-ok").onclick = () => sendVal(document.getElementById("qty-input").value);
