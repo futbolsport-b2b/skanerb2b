@@ -18,46 +18,50 @@ const startSkanowanie = () => {
 };
 
 function onScanSuccess(decodedText, decodedResult) {
-    // 1. Jeśli nie mamy zamówienia, szukamy kodu QR (SB2B/...)
-    if (!currentOrderID) {
-        if (decodedText.includes("SB2B") || decodedText.includes("/")) {
-            currentOrderID = decodedText;
-            orderBadge.innerText = "ZAM: " + currentOrderID;
-            orderBadge.className = "badge-active";
-            statusDisplay.value = "ZALOGOWANO. SKANUJ EAN13";
-            playBeep(880, 100);
-            debugLog.innerText = "Teraz skanuj produkty (EAN13)";
-        } else {
-            statusDisplay.value = "TO NIE JEST KOD ZAMÓWIENIA!";
-        }
+    const code = decodedText.trim();
+
+    // 1. LOGOWANIE ZAMÓWIENIA (Jeśli skan zawiera ukośniki lub "DHH")
+    if (code.includes("/") || code.includes("DHH")) {
+        currentOrderID = code;
+        orderBadge.innerText = "ZAM: " + currentOrderID;
+        orderBadge.className = "badge-active";
+        statusDisplay.value = "ZALOGOWANO ZAMÓWIENIE";
+        playBeep(880, 100);
+        
+        // Czyścimy tło i wracamy do skanowania produktów
+        setTimeout(() => {
+            statusDisplay.value = "SKANUJ PRODUKTY (EAN)";
+            html5QrCode.resume();
+        }, 1000);
         return;
     }
 
-    // 2. Jeśli mamy zamówienie, skanujemy EAN13
+    // 2. WALIDACJA PRODUKTU (Jeśli już mamy zamówienie i skanujemy coś innego)
     if (currentOrderID) {
-        // Blokujemy skaner na czas wysyłki
         html5QrCode.pause();
-        statusDisplay.value = "SPRAWDZANIE: " + decodedText;
+        statusDisplay.value = "SPRAWDZANIE EAN: " + code;
 
-        fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(decodedText)}`)
+        fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(code)}`)
             .then(res => res.json())
             .then(result => {
                 if (result.status === "success") {
-                    flashUI("#28a745");
-                    statusDisplay.value = result.msg;
-                    playBeep(880, 200);
+                    flashUI("#28a745"); // Zielony
                 } else {
-                    flashUI("#dc3545");
-                    statusDisplay.value = result.msg;
-                    playBeep(200, 500);
+                    flashUI("#dc3545"); // Czerwony
                     if (navigator.vibrate) navigator.vibrate(500);
                 }
-                setTimeout(() => html5QrCode.resume(), 2000);
+                statusDisplay.value = result.msg;
+                playBeep(result.status === "success" ? 880 : 200, 300);
+                
+                setTimeout(() => html5QrCode.resume(), 1500);
             })
             .catch(err => {
-                debugLog.innerText = "Błąd połączenia z Arkuszem";
+                statusDisplay.value = "BŁĄD POŁĄCZENIA";
                 html5QrCode.resume();
             });
+    } else {
+        statusDisplay.value = "NAJPIERW ZESKANUJ QR ZAMÓWIENIA!";
+        playBeep(200, 500);
     }
 }
 
