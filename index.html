@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TERMINAL B2B v3.0</title>
+    <title>TERMINAL B2B PRO</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
@@ -12,27 +12,26 @@
         <header>
             <div id="order-info">
                 <span id="label-status">SYSTEM GOTOWY</span>
-                <h2 id="order-id-display">SKANUJ KOD QR</h2>
+                <h2 id="order-id-display">ZESKANUJ DOKUMENT</h2>
             </div>
-            <button id="btn-finish" onclick="location.reload()">RESET</button>
+            <button id="btn-reset" onclick="location.reload()">RESET</button>
         </header>
 
         <div id="camera-wrapper">
             <div id="reader"></div>
-            <div id="custom-laser"></div>
         </div>
 
         <div class="ui-panel">
-            <div id="status-msg">Czekam na dokument zamówienia...</div>
+            <div id="status-msg">Czekam na kod QR zamówienia...</div>
             
-            <div id="qty-section">
+            <div id="qty-section" style="display: none;">
                 <div class="qty-card">
-                    <span id="scanned-product-name">PRODUKT</span>
+                    <span id="scanned-product-name">EAN: 000000000000</span>
                     <div class="qty-input-group">
-                        <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric">
+                        <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric" value="1">
                         <button id="btn-confirm-qty">DODAJ</button>
                     </div>
-                    <button id="btn-cancel-qty">ANULUJ</button>
+                    <button id="btn-cancel-qty">ANULUJ SKAN</button>
                 </div>
             </div>
         </div>
