@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B SCAN v9.0</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <title>B2B PICKER v11</title>
+    <link rel="stylesheet" href="style.css?v=11">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
     <div class="app-container">
         <header>
-            <div id="order-id-display">SCAN QR</div>
-            <button id="btn-reset" onclick="location.reload()">RESET</button>
+            <div id="order-title">ZESKANUJ ZAMÓWIENIE</div>
+            <button id="btn-exit" onclick="location.reload()" style="display:none;">WYJDŹ</button>
         </header>
 
         <div id="camera-wrapper">
@@ -19,18 +19,34 @@
         </div>
 
         <div class="ui-panel">
-            <div id="status-msg">Czekam na QR zamówienia...</div>
-            
-            <div id="qty-section">
-                <div id="scanned-product-name">NAZWA PRODUKTU</div>
+            <div id="task-card" style="display: none;">
+                <div class="info-row">
+                    <span class="label">POZYCJA:</span>
+                    <span id="task-lp" class="val">-</span>
+                </div>
+                <div id="task-nazwa">NAZWA PRODUKTU</div>
+                <div class="info-row">
+                    <span class="label">NR KAT:</span>
+                    <span id="task-kat" class="val">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">DO SPAKOWANIA:</span>
+                    <span id="task-qty" class="val">-</span>
+                </div>
+                <button id="btn-open-scanner">SKANUJ PRODUKT</button>
+            </div>
+
+            <div id="qty-section" style="display: none;">
+                <div id="qty-msg">Wprowadź ilość:</div>
                 <div class="compact-row">
-                    <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric" value="1">
+                    <input type="number" id="quantity-input" pattern="\d*" inputmode="numeric">
                     <button id="btn-confirm-qty">✔</button>
-                    <button id="btn-cancel-qty">✖</button>
                 </div>
             </div>
+
+            <div id="status-msg">Czekam na QR zamówienia...</div>
         </div>
     </div>
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=11"></script>
 </body>
 </html>
