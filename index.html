@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v43.4</title>
-    <link rel="stylesheet" href="style.css?v=43.4">
+    <title>B2B TERMINAL v43.5</title>
+    <link rel="stylesheet" href="style.css?v=43.5">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1c1c1e">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -14,7 +14,7 @@
     
     <div class="app-container">
         <header id="main-header">
-            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.4</div>
+            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.5</div>
             
             <div class="header-main-row">
                 <div id="order-val" class="breathing">ZESKANUJ KOD QR</div>
@@ -99,3 +99,16 @@
                     <button class="np-btn np-action" id="np-clear">C</button>
                     <button class="np-btn" data-val="0">0</button>
                     <button class="np-btn np-action" id="np-del">⌫</button>
+                </div>
+
+                <div class="modal-action-row">
+                    <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
+                    <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=43.5"></script>
+</body>
+</html>
