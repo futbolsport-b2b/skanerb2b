@@ -1,5 +1,4 @@
-// v42.5 - Terminal Magazynowy - JS
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4CM8RRE_CR5VrA9ulylGkumghptwlKT0t7LlxT2V6BaunlIVLQMlJn6rERr3NOQh8/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6NPDRWs8GhX1HXcA2du5jgJM8PJOu2f9iMf96RHaPjNNIAR6-a7NqkPtZtGUykZeA/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
@@ -23,34 +22,27 @@ async function fetchNext(offset) {
                 document.getElementById("task-kat").innerText = targetItem.nr_kat;
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
-
                 const notesRow = document.getElementById("task-notes-row");
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") {
                     document.getElementById("task-notes").innerText = targetItem.uwagi;
                     notesRow.style.display = "block";
                 } else { notesRow.style.display = "none"; }
-
                 document.getElementById("task-panel").style.display = "block";
                 setLoadingState(false);
             }, 350);
-        } else { alert("ZAMÓWIENIE ZREALIZOWANE"); location.reload(); }
+        } else { alert("ZREALIZOWANE"); location.reload(); }
     } catch (e) { setLoadingState(false); }
 }
 
 function showQty() {
     const m = document.getElementById("qty-modal");
     document.getElementById("qty-name").innerText = targetItem.nazwa;
-    
-    // Front 4 Update: Nr Kat (niebieski) i Rozmiar (czerwony)
     document.getElementById("qty-kat-val").innerText = targetItem.nr_kat;
     document.getElementById("qty-roz-val").innerText = targetItem.rozmiar || "---";
-    
     document.getElementById("qty-remain").innerText = targetItem.pozostalo;
-    
-    // Reset przycisku (widoczny tekst, schowany spinner)
-    document.getElementById("btn-ok-text").style.display = "inline";
-    document.getElementById("btn-ok-spinner").style.display = "none";
-    
+    document.getElementById("btn-text-content").style.display = "inline";
+    document.getElementById("btn-loader").style.display = "none";
+    document.getElementById("btn-qty-ok").disabled = false;
     m.style.display = "flex";
     const i = document.getElementById("qty-input"); i.value = "";
     setTimeout(() => { i.focus(); i.click(); }, 150);
@@ -58,26 +50,23 @@ function showQty() {
 
 function sendVal(q) {
     if (!q || q <= 0) return;
-    
-    // Aktywacja spinnera na przycisku
-    document.getElementById("btn-ok-text").style.display = "none";
-    document.getElementById("btn-ok-spinner").style.display = "block";
-
+    document.getElementById("btn-text-content").style.display = "none";
+    document.getElementById("btn-loader").style.display = "block";
+    document.getElementById("btn-qty-ok").disabled = true;
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => {
         if (res.status === "success") {
             document.getElementById("qty-modal").style.display = "none";
             fetchNext(currentOffset);
         } else {
-            // Reset spinnera w przypadku błędu
-            document.getElementById("btn-ok-text").style.display = "inline";
-            document.getElementById("btn-ok-spinner").style.display = "none";
+            document.getElementById("btn-text-content").style.display = "inline";
+            document.getElementById("btn-loader").style.display = "none";
+            document.getElementById("btn-qty-ok").disabled = false;
             showError(res.msg);
         }
     });
 }
 
-// Funkcje skanowania i pomocnicze z v42.4...
 function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
