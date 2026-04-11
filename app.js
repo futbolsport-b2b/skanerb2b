@@ -1,9 +1,8 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztwhvZkWkLVSt4yfpalrAT7JYTqnSimlE3tRUH3GH3E7i3qIRUyX64T2gCMi1JWDSV/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
-let currentInputValue = "0"; // Dla Custom Numpad
+let currentInputValue = "0"; 
 const html5QrCode = new Html5Qrcode("reader");
 
-// 1. WAKE LOCK API (Zapobieganie wygaszaniu ekranu)
 let wakeLock = null;
 async function requestWakeLock() {
     try {
@@ -18,18 +17,16 @@ document.addEventListener('visibilitychange', () => {
 });
 requestWakeLock();
 
-// 2. SYNTEZA MOWY (Web Speech API)
 function speakVoice(text) {
     if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Przerwij poprzednie
+        window.speechSynthesis.cancel(); 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'pl-PL';
-        utterance.rate = 1.1; // Lekko przyspieszone
+        utterance.rate = 1.1; 
         window.speechSynthesis.speak(utterance);
     }
 }
 
-// System Audio (Dźwięki + Wibracje)
 let audioCtx = null;
 function playSound(type) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -80,7 +77,6 @@ function setLoadingState(active) {
     } 
 }
 
-// 3. LATARKA (Torch API)
 let torchOn = false;
 document.getElementById('btn-torch').onclick = async () => {
     torchOn = !torchOn;
@@ -99,7 +95,6 @@ async function fetchNext(offset) {
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`).then(r => r.json());
         
-        // Aktualizacja globalnego paska postępu
         if(res.progress !== undefined) {
             document.getElementById("global-progress-fill").style.width = res.progress + "%";
         }
@@ -150,15 +145,22 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
+        // Zmiany w nagłówku po zeskanowaniu QR
+        document.getElementById("brand-title").style.display = "none"; // Ukrycie napisu System Kompletacji
         const orderValElem = document.getElementById("order-val");
         orderValElem.innerText = code;
         orderValElem.classList.remove("breathing"); 
+        orderValElem.style.textAlign = "left";
+        orderValElem.style.fontSize = "26px";
+        orderValElem.style.color = "#fff"; // Numer zamówienia na biało, by był bardzo czytelny
+        
+        document.getElementById("global-progress-bar").style.display = "block"; // Pokazujemy gruby zielony pasek
 
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
                 document.getElementById("btn-torch").style.display = "none";
-                document.getElementById("btn-finish-icon").style.display = "flex"; 
+                document.getElementById("btn-finish-icon").style.display = "flex"; // Pokazanie prostokątnego ZAKOŃCZ
                 fetchNext(0); 
             }); 
         }, 300); 
@@ -188,7 +190,7 @@ async function startQR() {
     isProcessing = false; 
     document.body.className = "qr-mode"; 
     document.getElementById("scanner-instruction").style.display = "none"; 
-    document.getElementById("btn-torch").style.display = "none"; // W QR latarka raczej zbędna, ew. włącz
+    document.getElementById("btn-torch").style.display = "none"; 
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan); 
 }
 
@@ -198,13 +200,12 @@ async function startEAN() {
     document.getElementById("target-kat-val").innerText = targetItem.nr_kat;
     document.getElementById("target-size-val").innerText = targetItem.rozmiar || "---"; 
     document.getElementById("scanner-instruction").style.display = "block";
-    document.getElementById("btn-torch").style.display = "flex"; // Aktywacja przycisku latarki
+    document.getElementById("btn-torch").style.display = "flex"; 
     document.getElementById("btn-torch").classList.remove('active');
     torchOn = false;
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
-// 4. CUSTOM NUMPAD LOGIC (Własna Klawiatura)
 function updateDisplay(val) {
     currentInputValue = String(val);
     document.getElementById("qty-input-display").innerText = currentInputValue;
@@ -212,6 +213,8 @@ function updateDisplay(val) {
 
 function flashDisplayError() {
     playSound('error');
+    // Zmiana tekstu głosu na dużo bardziej czytelny dla TTS
+    speakVoice("Zły produkt"); 
     const disp = document.getElementById("qty-input-display");
     disp.classList.add("flash-error");
     setTimeout(() => disp.classList.remove("flash-error"), 300);
@@ -243,6 +246,7 @@ document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
         
         if (newVal > targetItem.pozostalo) {
             playSound('error'); 
+            speakVoice("Zły produkt");
             btn.classList.add('flash-error'); 
             setTimeout(() => { btn.classList.remove('flash-error'); }, 300); 
         } else {
@@ -264,10 +268,9 @@ function showQty() {
     document.getElementById("btn-qty-ok").classList.remove("is-loading");
     document.getElementById("btn-qty-ok").disabled = false;
 
-    updateDisplay("0"); // Zamiast input.value = ""
+    updateDisplay("0"); 
     m.style.display = "flex"; 
     
-    // Głosowa informacja!
     speakVoice(`Pobierz ${targetItem.pozostalo} sztuk`);
 }
 
@@ -281,7 +284,7 @@ function sendVal(q) {
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
-            speakVoice("Zapisano"); // Potwierdzenie zapisu głosem
+            speakVoice("Zapisano"); 
             fetchNext(currentOffset); 
         } else { 
             btnOk.classList.remove("is-loading");
@@ -294,23 +297,21 @@ function sendVal(q) {
 function showError(m) { 
     isProcessing = true; 
     playSound('error'); 
-    speakVoice("Błąd"); 
+    speakVoice("Zły produkt"); 
     const o = document.getElementById("error-overlay"); 
     document.getElementById("error-text").innerText = m; 
     o.style.display = "flex"; 
     setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
 }
 
-// 5. OBSŁUGA GESTÓW (Swipe w lewo/prawo na karcie produktu)
 let touchStartX = 0;
 const taskPanel = document.getElementById('task-panel');
 taskPanel.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
 taskPanel.addEventListener('touchend', e => {
     let touchEndX = e.changedTouches[0].screenX;
-    if (touchEndX < touchStartX - 50 && !isProcessing) fetchNext(currentOffset + 1); // Przesunięcie w lewo -> Następny
-    if (touchEndX > touchStartX + 50 && !isProcessing) fetchNext(currentOffset - 1); // Przesunięcie w prawo -> Poprzedni
+    if (touchEndX < touchStartX - 50 && !isProcessing) fetchNext(currentOffset + 1); 
+    if (touchEndX > touchStartX + 50 && !isProcessing) fetchNext(currentOffset - 1); 
 }, {passive: true});
-
 
 document.getElementById("btn-qty-ok").onclick = () => sendVal(currentInputValue);
 document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-panel").style.display = "none"; document.getElementById("scanner-box").style.display = "block"; startEAN(); };
@@ -319,7 +320,6 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// Odblokowanie Audio i Mowy przy pierwszym kliknięciu (polityka przeglądarek)
 document.body.addEventListener('click', () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
