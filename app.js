@@ -1,4 +1,4 @@
-// v37 - Terminal Magazynowy - JS
+// v40 - Terminal Magazynowy - JS
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwL9WvrgYCGl4q_Drdh32kp_6kajwAHWNO8jiB57uq2hLUO-DU2UyNklQ6b0GgHofDELg/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
@@ -7,13 +7,15 @@ function setCornersColor(color) {
     document.querySelectorAll('.corner').forEach(el => el.style.borderColor = color);
 }
 
-// Funkcja Mrożenia i Paska Postępu
-function setLoader(state) {
+// ZMIANA 3: Obsługa stanu ładowania (Mrożenie i Pasek)
+function setLoadingState(active) {
     const card = document.querySelector('.task-card');
-    if (state) {
-        card.classList.add('loading-state');
+    if (active) {
+        card.classList.add('loading-mode');
+        isProcessing = true;
     } else {
-        card.classList.remove('loading-state');
+        card.classList.remove('loading-mode');
+        isProcessing = false;
     }
 }
 
@@ -21,7 +23,6 @@ async function startQR() {
     isProcessing = false;
     document.body.className = "qr-mode";
     document.getElementById("scanner-instruction").style.display = "none";
-    document.getElementById("footer-logo").style.display = "flex";
     setCornersColor("white");
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
@@ -31,7 +32,6 @@ async function startEAN() {
     document.body.className = "ean-mode";
     document.getElementById("target-kat-display").innerText = targetItem.nr_kat;
     document.getElementById("scanner-instruction").style.display = "block";
-    document.getElementById("footer-logo").style.display = "none";
     setCornersColor("white");
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
@@ -70,7 +70,7 @@ function onScan(text) {
 }
 
 async function fetchNext(offset) {
-    setLoader(true); // Włącz mrożenie i pasek
+    setLoadingState(true); // Aktywuj mrożenie i pasek
     currentOffset = offset;
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`).then(r => r.json());
@@ -78,23 +78,21 @@ async function fetchNext(offset) {
             targetItem = res.item;
             currentOffset = res.current_offset;
             
-            // Krótkie opóźnienie, by użytkownik zauważył pasek postępu
+            // Lekka zwłoka dla płynności przejścia animacji
             setTimeout(() => {
                 document.getElementById("task-lp").innerText = targetItem.lp;
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat;
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-panel").style.display = "block";
-                setLoader(false); // Wyłącz mrożenie
-                isProcessing = false;
-            }, 300);
+                setLoadingState(false); // Przywróć UI i przycisk skanowania
+            }, 350);
         } else {
             alert("ZREALIZOWANO");
             location.reload();
         }
     } catch (e) { 
-        setLoader(false);
-        isProcessing = false; 
+        setLoadingState(false);
     }
 }
 
