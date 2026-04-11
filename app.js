@@ -14,36 +14,29 @@ function playSound(type) {
 
     if (type === 'success') {
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Dźwięk A5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
         gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
         osc.start(audioCtx.currentTime);
         osc.stop(audioCtx.currentTime + 0.15);
     } else if (type === 'error') {
-        // Łagodniejszy, krótki, podwójny sygnał ostrzegawczy
         osc.type = 'triangle';
-        
-        // Pierwszy dźwięk (0.0s do 0.1s)
         osc.frequency.setValueAtTime(220, audioCtx.currentTime); 
         gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        
-        // Drugi dźwięk (0.15s do 0.25s)
         osc.frequency.setValueAtTime(220, audioCtx.currentTime + 0.15); 
         gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime + 0.15);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-
         osc.start(audioCtx.currentTime);
         osc.stop(audioCtx.currentTime + 0.3);
     }
 }
 
-// Funkcja dodająca kolor zielony/czerwony na celowniku
 function triggerScanVisual(type) {
     const sv = document.getElementById("scanner-visual");
     if(sv) {
         sv.className = type === 'success' ? 'scan-success' : 'scan-error';
-        setTimeout(() => { sv.className = ''; }, 400); // Wróć do bieli po 400ms
+        setTimeout(() => { sv.className = ''; }, 400); 
     }
 }
 
@@ -67,6 +60,17 @@ async function fetchNext(offset) {
             targetItem = res.item; 
             currentOffset = res.current_offset;
             setTimeout(() => {
+                // Front 4: Ukrywamy modal DOPIERO gdy nowy produkt jest wczytany i gotowy do pokazania
+                const m = document.getElementById("qty-modal");
+                if (m.style.display === "flex") {
+                    m.style.display = "none";
+                    // Resetujemy przycisk na przyszłość
+                    const btnOk = document.getElementById("btn-qty-ok");
+                    btnOk.classList.remove("is-loading");
+                    btnOk.innerText = "ZATWIERDŹ";
+                    btnOk.disabled = false;
+                }
+
                 document.getElementById("task-lp").innerText = targetItem.lp; 
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
@@ -107,7 +111,7 @@ function onScan(text) {
                 document.getElementById("btn-finish-icon").style.display = "flex"; 
                 fetchNext(0); 
             }); 
-        }, 300); // Wydłużono z 150ms do 300ms, by pracownik zauważył zieloną ramkę
+        }, 300); 
     } else if (code === targetItem.ean) {
         isProcessing = true;
         playSound('success');
@@ -149,6 +153,13 @@ function showQty() {
     document.getElementById("qty-kat-val").innerHTML = "Nr Kat: <span class='kat-number'>" + targetItem.nr_kat + "</span> <span class='meta-separator'>|</span> Roz: <span class='size-number'>" + sizeDisplay + "</span>"; 
     
     document.getElementById("qty-remain").innerText = targetItem.pozostalo;
+    
+    // Upewniamy się, że przycisk jest czysty za każdym razem gdy włączamy Front 4
+    const btnOk = document.getElementById("btn-qty-ok");
+    btnOk.classList.remove("is-loading");
+    btnOk.innerText = "ZATWIERDŹ";
+    btnOk.disabled = false;
+
     m.style.display = "flex"; 
     const i = document.getElementById("qty-input"); 
     i.value = ""; 
@@ -156,13 +167,24 @@ function showQty() {
 }
 
 function sendVal(q) {
-    if(!q || isNaN(q) || parseInt(q) <= 0) return; // Zabezpieczenie przed wysłaniem pustego/zerowego pola
+    if(!q || isNaN(q) || parseInt(q) <= 0) return; 
+
+    // Front 4: Aktywacja stanu zapisu na przycisku i zablokowanie kliknięć
+    const btnOk = document.getElementById("btn-qty-ok");
+    btnOk.classList.add("is-loading");
+    btnOk.innerText = "PRZETWARZANIE...";
+    btnOk.disabled = true;
+
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
-            document.getElementById("qty-modal").style.display = "none"; 
+            // NIE ukrywamy tu modala. Modal ukryje się w funkcji fetchNext gdy pobierze kolejny produkt.
             fetchNext(currentOffset); 
         } else { 
+            // W razie błędu resetujemy przycisk, by dać szansę na poprawkę
+            btnOk.classList.remove("is-loading");
+            btnOk.innerText = "ZATWIERDŹ";
+            btnOk.disabled = false;
             showError(res.msg); 
         } 
     });
