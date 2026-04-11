@@ -18,8 +18,12 @@ header { padding: calc(env(safe-area-inset-top) + 15px) 20px 15px; background: v
 @keyframes text-breathe { 0% { opacity: 0.6; transform: scale(1); text-shadow: 0 0 0 transparent; } 50% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 15px rgba(50, 215, 75, 0.6); } 100% { opacity: 0.6; transform: scale(1); text-shadow: 0 0 0 transparent; } }
 
 #scanner-box { position: relative; width: 100%; height: 45vh; background: #000; overflow: hidden; }
-#btn-torch { position: absolute; top: 15px; right: 15px; z-index: 200; background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s; }
+
+/* PRZYCISKI SKANERA NA DOLE */
+#btn-torch { position: absolute; bottom: 20px; right: 20px; z-index: 200; background: rgba(0,0,0,0.7); border: 2px solid #fff; border-radius: 50%; width: 55px; height: 55px; font-size: 24px; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s; }
 #btn-torch.active { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
+#btn-back-scan { position: absolute; bottom: 20px; left: 20px; z-index: 200; background: rgba(0,0,0,0.7); border: 2px solid #fff; border-radius: 50%; width: 55px; height: 55px; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s; }
+#btn-back-scan:active { transform: scale(0.92); background: #3a3a3c; }
 
 #reader { width: 100% !important; height: 100% !important; }
 #reader video { object-fit: cover !important; }
@@ -59,11 +63,12 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #image-zoom-overlay.show { opacity: 1; }
 #zoomed-img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
 
-.product-meta-row { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 20px; }
-#task-kat { color: var(--accent); font-weight: 900; font-size: 28px; letter-spacing: 1px; }
-.meta-separator { color: #3a3a3c; font-size: 26px; }
-.size-label { font-size: 18px; color: var(--text-sec); }
-#task-size { color: var(--bright-green); font-weight: 900; font-size: 30px; }
+/* ZMNIEJSZONE METADANE PRODUKTU DLA LEPSZEGO BALANSU */
+.product-meta-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 20px; }
+#task-kat { color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
+.meta-separator { color: #3a3a3c; font-size: 22px; }
+.size-label { font-size: 16px; color: var(--text-sec); }
+#task-size { color: var(--bright-green); font-weight: 900; font-size: 24px; }
 
 .task-qty-box { background: #000; border-radius: 16px; padding: 10px; margin-bottom: 10px; }
 #task-qty { font-size: 48px; font-weight: 900; color: var(--success); transition: color 0.3s; }
