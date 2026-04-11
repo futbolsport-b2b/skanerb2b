@@ -1,4 +1,4 @@
-const CACHE_NAME = 'b2b-terminal-v1.2';
+const CACHE_NAME = 'b2b-terminal-v1.2.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,7 +18,6 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Omijamy cache dla wywołań serwerowych GAS
   if (event.request.url.includes('script.google.com')) return;
 
   event.respondWith(
