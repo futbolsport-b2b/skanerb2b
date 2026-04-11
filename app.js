@@ -6,7 +6,7 @@ let currentInputValue = "0";
 let zoomTimeout = null; 
 const html5QrCode = new Html5Qrcode("reader");
 
-// Funkcja Fullscreen dla JS
+// Funkcja wywołująca tryb pełnoekranowy (Fullscreen)
 function goFullscreen() {
     if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) {
@@ -103,22 +103,24 @@ document.getElementById('btn-torch').onclick = async () => {
     }
 };
 
+// Obsługa kliknięcia i zooma na zdjęciu
 document.getElementById('task-img').onclick = function() {
     const overlay = document.getElementById('image-zoom-overlay');
     document.getElementById('zoomed-img').src = this.src;
     overlay.style.display = 'flex';
-    void overlay.offsetWidth; 
+    void overlay.offsetWidth; // Wymuszenie reflow przeglądarki dla płynnej animacji
     overlay.classList.add('show');
     
     clearTimeout(zoomTimeout);
-    zoomTimeout = setTimeout(closeZoom, 3000); 
+    zoomTimeout = setTimeout(closeZoom, 3000); // Automatyczne zamknięcie po 3s
 };
 
 function closeZoom() {
     const overlay = document.getElementById('image-zoom-overlay');
     overlay.classList.remove('show');
-    setTimeout(() => overlay.style.display = 'none', 300); 
+    setTimeout(() => overlay.style.display = 'none', 300); // Czas musi odpowiadać animacji CSS
 }
+// Możliwość zamknięcia zooma na żądanie
 document.getElementById('image-zoom-overlay').onclick = closeZoom;
 
 async function fetchNext(offset) {
@@ -145,9 +147,23 @@ async function fetchNext(offset) {
                 document.getElementById("task-lp").innerText = targetItem.lp; 
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
-                document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
                 
+                // === Wdrożenie warunku na kolor dla DO POBRANIA ===
+                const qtyElem = document.getElementById("task-qty");
+                qtyElem.innerText = targetItem.pozostalo;
+                const notesRow = document.getElementById("task-notes-row");
+                
+                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
+                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
+                    notesRow.style.display = "block"; 
+                    qtyElem.style.color = "var(--error)"; // Czerwony jeśli są uwagi (fix v43.8)
+                } else { 
+                    notesRow.style.display = "none"; 
+                    qtyElem.style.color = "var(--success)"; // Standardowy zielony
+                }
+                
+                // Generowanie zdjęcia
                 const imgBox = document.getElementById("product-image-box");
                 const imgElem = document.getElementById("task-img");
                 imgElem.src = "";
@@ -163,13 +179,6 @@ async function fetchNext(offset) {
                     imgBox.style.display = "none";
                 }
 
-                const notesRow = document.getElementById("task-notes-row");
-                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
-                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
-                    notesRow.style.display = "block"; 
-                } else { 
-                    notesRow.style.display = "none"; 
-                }
                 document.getElementById("task-panel").style.display = "block"; 
                 setLoadingState(false);
             }, 350);
@@ -193,13 +202,15 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // Aktywacja Trybu START (v43.6 fix)
+        // FIX FULLSCREEN: Przebudowa interfejsu w guzik inicjujący (tryb START v43.8)
         html5QrCode.stop().then(() => { 
             document.getElementById("scanner-box").style.display = "none"; 
             document.getElementById("btn-torch").style.display = "none";
             document.getElementById("brand-title").style.display = "none"; 
             
             const orderValElem = document.getElementById("order-val");
+            
+            // Zamiana tekstu w przycisk wymuszający kliknięcie użytkownika
             orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
             orderValElem.classList.add("breathing"); 
             orderValElem.style.textAlign = "center";
@@ -211,6 +222,7 @@ function onScan(text) {
             orderValElem.style.borderRadius = "16px";
             orderValElem.style.marginTop = "15vh";
             
+            // Reakcja na kliknięcie gwarantująca prawidłowe wymuszenie Fullscreen API (v43.8 fix)
             orderValElem.onclick = () => {
                 goFullscreen();
                 
@@ -420,5 +432,13 @@ document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1)
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
+
+// Podpięcie Fullscreen pod dowolne kliknięcie (v43.6 fix, v43.8 fix)
+// Ta funkcja jest teraz wywoływana w trybie START, ale zostawiam jako fallback.
+document.body.addEventListener('click', () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+}, { once: true });
 
 startQR();
