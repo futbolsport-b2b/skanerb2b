@@ -1,5 +1,5 @@
-// v42.4 (BLUE-SKY) - Terminal Magazynowy - JS
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwe98bdFFR6oYujE3JPZbmkVjDbd8CbPV4e82CxldmWSRGGEskG885Wmh3OsB6qzrSs/exec"; 
+// ver. 42.4 - Terminal Magazynowy - JS
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznw5fK99kxqzCwcGXDjAfn-E2h8Lre3khmPIQivB3snBPugZufk1k-5LlRzxbLrRlU/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
@@ -23,11 +23,13 @@ async function fetchNext(offset) {
                 document.getElementById("task-kat").innerText = targetItem.nr_kat;
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
+
                 const notesRow = document.getElementById("task-notes-row");
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") {
                     document.getElementById("task-notes").innerText = targetItem.uwagi;
                     notesRow.style.display = "block";
                 } else { notesRow.style.display = "none"; }
+
                 document.getElementById("task-panel").style.display = "block";
                 setLoadingState(false);
             }, 350);
@@ -62,6 +64,7 @@ function onScan(text) {
 
 async function startQR() {
     isProcessing = false; document.body.className = "qr-mode";
+    document.getElementById("scanner-instruction").style.display = "none";
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
