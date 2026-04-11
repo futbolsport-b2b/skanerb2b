@@ -56,13 +56,21 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #qr-instruction { font-size: 24px; font-weight: 900; color: var(--success); margin-top: 15px; }
 #qr-instruction.breathing { animation: text-breathe 2s infinite ease-in-out; }
 
-/* ZAKTUALIZOWANA, RESPONSYWNA SEKCJA LOGO */
+/* SEKCJA LOGO - WERSJA 1.2 (elastyczna) */
 .logo-container { margin-top: auto; margin-bottom: 25px; width: 100%; display: flex; justify-content: center; }
 #company-logo { width: 70vw; max-width: 280px; height: auto; object-fit: contain; opacity: 0.9; }
 
 .task-card { background: var(--card-bg); border-radius: 24px; padding: 15px; border: 1px solid #3a3a3c; margin: 10px; text-align: center; touch-action: pan-y; }
 .task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.btn-circle { width: 40px; height: 40px; border-radius: 12px; background: #2c2c2e; border: none; color: #fff; font-size: 16px; }
+
+/* NOWY STYL DLA PRZYCISKÓW KARTY PRODUKTU (Identyczny z przyciskiem skanera) */
+.btn-circle { width: 55px; height: 55px; border-radius: 50%; background: rgba(0,0,0,0.7); border: 2px solid #fff; color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); transition: all 0.2s; cursor: pointer; }
+.btn-circle:active { transform: scale(0.92); background: #3a3a3c; border-color: #8e8e93; }
+
+.btn-primary { width: 100%; height: 60px; border-radius: 30px; background: rgba(0,0,0,0.7); border: 2px solid #fff; color: #fff; font-size: 18px; font-weight: 700; backdrop-filter: blur(5px); transition: all 0.2s; cursor: pointer; }
+.btn-primary:active { transform: scale(0.96); background: #3a3a3c; border-color: #8e8e93; }
+/* ------------------------------------------------------------------------- */
+
 #task-lp { font-size: 14px; }
 #task-lp b { font-size: 16px; }
 #task-name { font-size: 20px; font-weight: 800; line-height: 1.2; margin-bottom: 5px; }
@@ -85,7 +93,6 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #task-notes-row { font-size: 15px; color: #fff; margin-bottom: 10px; }
 #task-notes { color: var(--error); font-weight: 900; text-transform: uppercase; }
 
-.btn-primary { width: 100%; height: 60px; border-radius: 16px; background: var(--accent); border: none; color: #fff; font-size: 18px; font-weight: 700; }
 #product-data-area { position: relative; }
 #freeze-overlay { display: none; position: absolute; inset: -15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10; border-radius: 20px; }
 .loading-mode #freeze-overlay { display: block; }
