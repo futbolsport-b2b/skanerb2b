@@ -1,5 +1,5 @@
-// v42.1 - Terminal Magazynowy - JS
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8Pbl_p1YmSzJoGwUo12nJg39XhueJMOT7SRcnLlx42jq7CYZR-Iq1Pl42lCWVPrDF/exec"; 
+// v42.2 - Terminal Magazynowy - JS
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwitbXrR7CtXn94LUImb_YjPdlKSu_fZ2jjcEZ2IAWwJT7vlnk2kt90a038kjTjiL50/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
