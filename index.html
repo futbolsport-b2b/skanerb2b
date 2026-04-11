@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v1.6</title>
-    <link rel="stylesheet" href="style.css?v=1.6">
+    <title>B2B TERMINAL v2.1</title>
+    <link rel="stylesheet" href="style.css?v=2.1">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1c1c1e">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -18,7 +18,7 @@
     
     <div class="app-container">
         <header id="main-header">
-            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.1.6</div>
+            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.2.1</div>
             
             <div class="header-main-row" id="header-main-row" style="display: none;">
                 <div id="order-val"></div>
@@ -88,4 +88,37 @@
             <div class="sheet">
                 <div class="sheet-header">
                     <h2 id="qty-name">---</h2>
-                    <span id="qty-kat-val">Nr Kat:
+                    <span id="qty-kat-val">Nr Kat: ---</span>
+                </div>
+                <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
+                <div class="quick-add-row">
+                    <button class="btn-quick" data-add="1">+1</button>
+                    <button class="btn-quick" data-add="5">+5</button>
+                    <button class="btn-quick" id="btn-quick-max">MAX</button>
+                </div>
+                <div id="qty-input-display" class="custom-input-display">0</div>
+                <div class="custom-numpad">
+                    <button class="np-btn" data-val="1">1</button>
+                    <button class="np-btn" data-val="2">2</button>
+                    <button class="np-btn" data-val="3">3</button>
+                    <button class="np-btn" data-val="4">4</button>
+                    <button class="np-btn" data-val="5">5</button>
+                    <button class="np-btn" data-val="6">6</button>
+                    <button class="np-btn" data-val="7">7</button>
+                    <button class="np-btn" data-val="8">8</button>
+                    <button class="np-btn" data-val="9">9</button>
+                    <button class="np-btn np-action" id="np-clear">C</button>
+                    <button class="np-btn" data-val="0">0</button>
+                    <button class="np-btn np-action" id="np-del">⌫</button>
+                </div>
+                <div class="modal-action-row">
+                    <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
+                    <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=2.1"></script>
+</body>
+</html>
