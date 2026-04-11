@@ -1,7 +1,35 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznw5fK99kxqzCwcGXDjAfn-E2h8Lre3khmPIQivB3snBPugZufk1k-5LlRzxbLrRlU/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztwhvZkWkLVSt4yfpalrAT7JYTqnSimlE3tRUH3GH3E7i3qIRUyX64T2gCMi1JWDSV/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
+let currentInputValue = "0"; // Dla Custom Numpad
 const html5QrCode = new Html5Qrcode("reader");
 
+// 1. WAKE LOCK API (Zapobieganie wygaszaniu ekranu)
+let wakeLock = null;
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+        }
+    } catch (err) {}
+}
+document.addEventListener('visibilitychange', () => {
+    if (wakeLock === null && document.visibilityState === 'visible') requestWakeLock();
+});
+requestWakeLock();
+
+// 2. SYNTEZA MOWY (Web Speech API)
+function speakVoice(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Przerwij poprzednie
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pl-PL';
+        utterance.rate = 1.1; // Lekko przyspieszone
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+// System Audio (Dźwięki + Wibracje)
 let audioCtx = null;
 function playSound(type) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -20,10 +48,7 @@ function playSound(type) {
         osc.start(audioCtx.currentTime);
         osc.stop(audioCtx.currentTime + 0.15);
     } else if (type === 'error') {
-        if ("vibrate" in navigator) {
-            navigator.vibrate([200, 100, 200]); 
-        }
-
+        if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]); 
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(220, audioCtx.currentTime); 
         gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
@@ -55,11 +80,30 @@ function setLoadingState(active) {
     } 
 }
 
+// 3. LATARKA (Torch API)
+let torchOn = false;
+document.getElementById('btn-torch').onclick = async () => {
+    torchOn = !torchOn;
+    try {
+        await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+        document.getElementById('btn-torch').classList.toggle('active', torchOn);
+    } catch(e) {
+        torchOn = false;
+        alert("Latarka nie jest obsługiwana w tym trybie kamery.");
+    }
+};
+
 async function fetchNext(offset) {
     setLoadingState(true); 
     currentOffset = offset;
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`).then(r => r.json());
+        
+        // Aktualizacja globalnego paska postępu
+        if(res.progress !== undefined) {
+            document.getElementById("global-progress-fill").style.width = res.progress + "%";
+        }
+
         if (res.status === "next_item") {
             targetItem = res.item; 
             currentOffset = res.current_offset;
@@ -67,9 +111,8 @@ async function fetchNext(offset) {
                 const m = document.getElementById("qty-modal");
                 if (m.style.display === "flex") {
                     m.style.display = "none";
-                    const btnOk = document.getElementById("btn-qty-ok");
-                    btnOk.classList.remove("is-loading");
-                    btnOk.disabled = false;
+                    document.getElementById("btn-qty-ok").classList.remove("is-loading");
+                    document.getElementById("btn-qty-ok").disabled = false;
                 }
 
                 document.getElementById("task-lp").innerText = targetItem.lp; 
@@ -88,6 +131,7 @@ async function fetchNext(offset) {
                 setLoadingState(false);
             }, 350);
         } else { 
+            speakVoice("Zamówienie kompletne!");
             playSound('success'); 
             alert("ZAMÓWIENIE ZREALIZOWANE"); 
             location.reload(); 
@@ -106,14 +150,14 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // Front 1: Wpisanie kodu zamówienia i ZATRZYMANIE animacji oddechu
         const orderValElem = document.getElementById("order-val");
         orderValElem.innerText = code;
-        orderValElem.classList.remove("breathing"); // Wyłączamy pulsowanie
+        orderValElem.classList.remove("breathing"); 
 
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
+                document.getElementById("btn-torch").style.display = "none";
                 document.getElementById("btn-finish-icon").style.display = "flex"; 
                 fetchNext(0); 
             }); 
@@ -125,8 +169,13 @@ function onScan(text) {
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
-                if (targetItem.pozostalo > 1) showQty(); 
-                else sendVal(1); 
+                document.getElementById("btn-torch").style.display = "none";
+                
+                if (targetItem.pozostalo > 1) {
+                    showQty(); 
+                } else {
+                    sendVal(1); 
+                }
             }); 
         }, 300); 
     } else { 
@@ -139,6 +188,7 @@ async function startQR() {
     isProcessing = false; 
     document.body.className = "qr-mode"; 
     document.getElementById("scanner-instruction").style.display = "none"; 
+    document.getElementById("btn-torch").style.display = "none"; // W QR latarka raczej zbędna, ew. włącz
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan); 
 }
 
@@ -148,8 +198,60 @@ async function startEAN() {
     document.getElementById("target-kat-val").innerText = targetItem.nr_kat;
     document.getElementById("target-size-val").innerText = targetItem.rozmiar || "---"; 
     document.getElementById("scanner-instruction").style.display = "block";
+    document.getElementById("btn-torch").style.display = "flex"; // Aktywacja przycisku latarki
+    document.getElementById("btn-torch").classList.remove('active');
+    torchOn = false;
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
+
+// 4. CUSTOM NUMPAD LOGIC (Własna Klawiatura)
+function updateDisplay(val) {
+    currentInputValue = String(val);
+    document.getElementById("qty-input-display").innerText = currentInputValue;
+}
+
+function flashDisplayError() {
+    playSound('error');
+    const disp = document.getElementById("qty-input-display");
+    disp.classList.add("flash-error");
+    setTimeout(() => disp.classList.remove("flash-error"), 300);
+}
+
+document.querySelectorAll('.np-btn[data-val]').forEach(btn => {
+    btn.onclick = () => {
+        let digit = btn.getAttribute('data-val');
+        let newVal = currentInputValue === "0" ? digit : currentInputValue + digit;
+        if (parseInt(newVal) > targetItem.pozostalo) {
+            flashDisplayError();
+        } else {
+            updateDisplay(newVal);
+        }
+    };
+});
+
+document.getElementById('np-del').onclick = () => {
+    let newVal = currentInputValue.slice(0, -1);
+    updateDisplay(newVal === "" ? "0" : newVal);
+};
+
+document.getElementById('np-clear').onclick = () => updateDisplay("0");
+
+document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
+    btn.onclick = () => {
+        let addVal = parseInt(btn.getAttribute('data-add'));
+        let newVal = parseInt(currentInputValue) + addVal;
+        
+        if (newVal > targetItem.pozostalo) {
+            playSound('error'); 
+            btn.classList.add('flash-error'); 
+            setTimeout(() => { btn.classList.remove('flash-error'); }, 300); 
+        } else {
+            updateDisplay(newVal);
+        }
+    };
+});
+
+document.getElementById('btn-quick-max').onclick = () => updateDisplay(targetItem.pozostalo);
 
 function showQty() {
     const m = document.getElementById("qty-modal"); 
@@ -157,21 +259,20 @@ function showQty() {
     
     const sizeDisplay = targetItem.rozmiar || "---";
     document.getElementById("qty-kat-val").innerHTML = "Nr Kat: <span class='kat-number'>" + targetItem.nr_kat + "</span> <span class='meta-separator'>|</span> Roz: <span class='size-number'>" + sizeDisplay + "</span>"; 
-    
     document.getElementById("qty-remain").innerText = targetItem.pozostalo;
     
-    const btnOk = document.getElementById("btn-qty-ok");
-    btnOk.classList.remove("is-loading");
-    btnOk.disabled = false;
+    document.getElementById("btn-qty-ok").classList.remove("is-loading");
+    document.getElementById("btn-qty-ok").disabled = false;
 
+    updateDisplay("0"); // Zamiast input.value = ""
     m.style.display = "flex"; 
-    const i = document.getElementById("qty-input"); 
-    i.value = ""; 
-    setTimeout(() => { i.focus(); i.click(); }, 150);
+    
+    // Głosowa informacja!
+    speakVoice(`Pobierz ${targetItem.pozostalo} sztuk`);
 }
 
 function sendVal(q) {
-    if(!q || isNaN(q) || parseInt(q) <= 0) return; 
+    if(!q || isNaN(q) || parseInt(q) <= 0) { flashDisplayError(); return; }
 
     const btnOk = document.getElementById("btn-qty-ok");
     btnOk.classList.add("is-loading");
@@ -180,6 +281,7 @@ function sendVal(q) {
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
+            speakVoice("Zapisano"); // Potwierdzenie zapisu głosem
             fetchNext(currentOffset); 
         } else { 
             btnOk.classList.remove("is-loading");
@@ -192,43 +294,36 @@ function sendVal(q) {
 function showError(m) { 
     isProcessing = true; 
     playSound('error'); 
+    speakVoice("Błąd"); 
     const o = document.getElementById("error-overlay"); 
     document.getElementById("error-text").innerText = m; 
     o.style.display = "flex"; 
     setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
 }
 
-document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
-    btn.onclick = () => {
-        const input = document.getElementById("qty-input");
-        let currentVal = parseInt(input.value) || 0;
-        let addVal = parseInt(btn.getAttribute('data-add'));
-        let newVal = currentVal + addVal;
-        
-        if (newVal > targetItem.pozostalo) {
-            playSound('error'); 
-            btn.classList.add('flash-error'); 
-            setTimeout(() => { btn.classList.remove('flash-error'); }, 300); 
-        } else {
-            input.value = newVal; 
-        }
-    };
-});
+// 5. OBSŁUGA GESTÓW (Swipe w lewo/prawo na karcie produktu)
+let touchStartX = 0;
+const taskPanel = document.getElementById('task-panel');
+taskPanel.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+taskPanel.addEventListener('touchend', e => {
+    let touchEndX = e.changedTouches[0].screenX;
+    if (touchEndX < touchStartX - 50 && !isProcessing) fetchNext(currentOffset + 1); // Przesunięcie w lewo -> Następny
+    if (touchEndX > touchStartX + 50 && !isProcessing) fetchNext(currentOffset - 1); // Przesunięcie w prawo -> Poprzedni
+}, {passive: true});
 
-document.getElementById('btn-quick-max').onclick = () => {
-    document.getElementById("qty-input").value = targetItem.pozostalo;
-};
 
-document.getElementById("btn-qty-ok").onclick = () => sendVal(document.getElementById("qty-input").value);
+document.getElementById("btn-qty-ok").onclick = () => sendVal(currentInputValue);
 document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-panel").style.display = "none"; document.getElementById("scanner-box").style.display = "block"; startEAN(); };
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
-document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
+document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
+// Odblokowanie Audio i Mowy przy pierwszym kliknięciu (polityka przeglądarek)
 document.body.addEventListener('click', () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
 }, { once: true });
 
 startQR();
