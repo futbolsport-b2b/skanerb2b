@@ -1,6 +1,5 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztwhvZkWkLVSt4yfpalrAT7JYTqnSimlE3tRUH3GH3E7i3qIRUyX64T2gCMi1JWDSV/exec"; 
 const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big/"; 
-
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 let currentInputValue = "0"; 
 const html5QrCode = new Html5Qrcode("reader");
@@ -24,6 +23,7 @@ function speakVoice(text) {
 let audioCtx = null;
 function playSound(type) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
@@ -81,13 +81,12 @@ function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
     if (!currentOrderID) {
-        isProcessing = true;
-        currentOrderID = code;
+        isProcessing = true; currentOrderID = code;
         const ov = document.getElementById("order-val");
-        ov.innerHTML = `${code}<br><span style="font-size:14px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
+        ov.innerHTML = `${code}<br><span style="font-size:14px; color: #fff; background: #32d74b; padding: 10px; border-radius: 8px; display: block; margin-top: 10px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
         ov.onclick = () => {
             goFullscreen();
-            ov.innerHTML = code; ov.onclick = null; ov.classList.remove("breathing");
+            ov.innerHTML = code; ov.onclick = null; ov.classList.remove("breathing"); ov.style.textAlign = "left"; ov.style.fontSize = "26px";
             document.getElementById("brand-title").style.display = "none";
             document.getElementById("global-progress-bar").style.display = "block";
             document.getElementById("btn-finish-icon").style.display = "flex";
@@ -158,8 +157,4 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => confirm("Zakończyć?") && location.reload();
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: 250 }, onScan).catch(() => {
-    const ov = document.getElementById("order-val");
-    ov.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
-    ov.onclick = () => location.reload();
-});
+html5QrCode.start({ facingMode: "environment" }, { fps: 25, qrbox: 250 }, onScan);
