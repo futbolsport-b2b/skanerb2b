@@ -1,4 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztwhvZkWkLVSt4yfpalrAT7JYTqnSimlE3tRUH3GH3E7i3qIRUyX64T2gCMi1JWDSV/exec"; 
+const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big/"; 
+
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 let currentInputValue = "0"; 
 const html5QrCode = new Html5Qrcode("reader");
@@ -115,6 +117,25 @@ async function fetchNext(offset) {
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
+                
+                // === LOGIKA ZDJĘĆ Z ZEWNĘTRZNEGO SERWERA (v43.4) ===
+                const imgBox = document.getElementById("product-image-box");
+                const imgElem = document.getElementById("task-img");
+                imgElem.src = "";
+                
+                if(targetItem.nr_kat && targetItem.nr_kat !== "---") {
+                    // Zamiana spacji i myślników na _ (np. CW6894 010 -> CW6894_010)
+                    let formattedKat = String(targetItem.nr_kat).trim().replace(/[\s\-]+/g, '_');
+                    let finalImageUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
+                    
+                    imgElem.onload = () => { imgBox.style.display = "flex"; };
+                    imgElem.onerror = () => { imgBox.style.display = "none"; }; 
+                    imgElem.src = finalImageUrl;
+                } else {
+                    imgBox.style.display = "none";
+                }
+                // ====================================================
+
                 const notesRow = document.getElementById("task-notes-row");
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
                     document.getElementById("task-notes").innerText = targetItem.uwagi; 
@@ -282,14 +303,12 @@ function sendVal(q) {
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
-            // INTELIGENTNA KOMENDA GŁOSOWA (v43.2)
             let qInt = parseInt(q);
             if (qInt >= targetItem.pozostalo) {
                 speakVoice("Zatwierdzono pełne pobranie");
             } else {
                 speakVoice(`Zatwierdzono ${qInt} sztuk`);
             }
-            
             fetchNext(currentOffset); 
         } else { 
             btnOk.classList.remove("is-loading");
