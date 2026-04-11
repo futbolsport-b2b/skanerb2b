@@ -17,6 +17,8 @@ header { padding: calc(env(safe-area-inset-top) + 15px) 20px 15px; background: v
 
 @keyframes text-breathe { 0% { opacity: 0.6; transform: scale(1); text-shadow: 0 0 0 transparent; } 50% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 15px rgba(50, 215, 75, 0.6); } 100% { opacity: 0.6; transform: scale(1); text-shadow: 0 0 0 transparent; } }
 
+#main-view { display: flex; flex-direction: column; flex-grow: 1; position: relative; }
+
 #scanner-box { position: relative; width: 100%; height: 45vh; background: #000; overflow: hidden; }
 
 /* PRZYCISKI SKANERA NA DOLE */
@@ -49,6 +51,15 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 .ean-mode #laser-line { display: block; }
 #scanner-visual.scan-success #laser-line { background: var(--success); box-shadow: 0 0 10px var(--success); }
 
+/* Układ elementow pod skanerem z Logo na dole */
+#startup-screen-elements { display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex-grow: 1; width: 100%; padding: 20px 0; }
+#qr-instruction { font-size: 24px; font-weight: 900; color: var(--success); margin-top: 15px; }
+#qr-instruction.breathing { animation: text-breathe 2s infinite ease-in-out; }
+
+/* ZAKTUALIZOWANA, RESPONSYWNA SEKCJA LOGO */
+.logo-container { margin-top: auto; margin-bottom: 25px; width: 100%; display: flex; justify-content: center; }
+#company-logo { width: 70vw; max-width: 280px; height: auto; object-fit: contain; opacity: 0.9; }
+
 .task-card { background: var(--card-bg); border-radius: 24px; padding: 15px; border: 1px solid #3a3a3c; margin: 10px; text-align: center; touch-action: pan-y; }
 .task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .btn-circle { width: 40px; height: 40px; border-radius: 12px; background: #2c2c2e; border: none; color: #fff; font-size: 16px; }
@@ -63,7 +74,6 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #image-zoom-overlay.show { opacity: 1; }
 #zoomed-img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
 
-/* ZMNIEJSZONE METADANE PRODUKTU DLA LEPSZEGO BALANSU */
 .product-meta-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 20px; }
 #task-kat { color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
 .meta-separator { color: #3a3a3c; font-size: 22px; }
