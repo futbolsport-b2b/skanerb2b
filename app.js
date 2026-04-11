@@ -1,21 +1,7 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztwhvZkWkLVSt4yfpalrAT7JYTqnSimlE3tRUH3GH3E7i3qIRUyX64T2gCMi1JWDSV/exec"; 
-const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big/"; 
-
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 let currentInputValue = "0"; 
-let zoomTimeout = null; 
 const html5QrCode = new Html5Qrcode("reader");
-
-// Funkcja wywołująca tryb pełnoekranowy (Fullscreen)
-function goFullscreen() {
-    if (!document.fullscreenElement) {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(err => console.warn(err));
-        } else if (document.documentElement.webkitRequestFullscreen) {
-            document.documentElement.webkitRequestFullscreen();
-        }
-    }
-}
 
 let wakeLock = null;
 async function requestWakeLock() {
@@ -103,26 +89,6 @@ document.getElementById('btn-torch').onclick = async () => {
     }
 };
 
-// Obsługa kliknięcia i zooma na zdjęciu
-document.getElementById('task-img').onclick = function() {
-    const overlay = document.getElementById('image-zoom-overlay');
-    document.getElementById('zoomed-img').src = this.src;
-    overlay.style.display = 'flex';
-    void overlay.offsetWidth; // Wymuszenie reflow przeglądarki dla płynnej animacji
-    overlay.classList.add('show');
-    
-    clearTimeout(zoomTimeout);
-    zoomTimeout = setTimeout(closeZoom, 3000); // Automatyczne zamknięcie po 3s
-};
-
-function closeZoom() {
-    const overlay = document.getElementById('image-zoom-overlay');
-    overlay.classList.remove('show');
-    setTimeout(() => overlay.style.display = 'none', 300); // Czas musi odpowiadać animacji CSS
-}
-// Możliwość zamknięcia zooma na żądanie
-document.getElementById('image-zoom-overlay').onclick = closeZoom;
-
 async function fetchNext(offset) {
     setLoadingState(true); 
     currentOffset = offset;
@@ -147,38 +113,28 @@ async function fetchNext(offset) {
                 document.getElementById("task-lp").innerText = targetItem.lp; 
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
+                document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
                 
-                // === Wdrożenie warunku na kolor dla DO POBRANIA ===
-                const qtyElem = document.getElementById("task-qty");
-                qtyElem.innerText = targetItem.pozostalo;
-                const notesRow = document.getElementById("task-notes-row");
-                
-                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
-                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
-                    notesRow.style.display = "block"; 
-                    qtyElem.style.color = "var(--error)"; // Czerwony jeśli są uwagi (fix v43.8)
-                } else { 
-                    notesRow.style.display = "none"; 
-                    qtyElem.style.color = "var(--success)"; // Standardowy zielony
-                }
-                
-                // Generowanie zdjęcia
+                // Generowanie zdjęcia (obsługiwane bezpośrednio przez SCRIPT_URL, v43.7)
                 const imgBox = document.getElementById("product-image-box");
                 const imgElem = document.getElementById("task-img");
-                imgElem.src = "";
-                
-                if(targetItem.nr_kat && targetItem.nr_kat !== "---") {
-                    let formattedKat = String(targetItem.nr_kat).trim().replace(/\s+/g, '_');
-                    let finalImageUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
-                    
+                imgElem.src = ""; // Reset starego zdjęcia
+                if(targetItem.ean) {
+                    // Script URL wygeneruje tło panelu za pomocą mix-blend-mode w CSS (v43.7)
                     imgElem.onload = () => { imgBox.style.display = "flex"; };
-                    imgElem.onerror = () => { imgBox.style.display = "none"; }; 
-                    imgElem.src = finalImageUrl;
+                    imgElem.src = `${SCRIPT_URL}?action=get_item_image&ean=${targetItem.ean}`; 
                 } else {
                     imgBox.style.display = "none";
                 }
 
+                const notesRow = document.getElementById("task-notes-row");
+                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
+                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
+                    notesRow.style.display = "block"; 
+                } else { 
+                    notesRow.style.display = "none"; 
+                }
                 document.getElementById("task-panel").style.display = "block"; 
                 setLoadingState(false);
             }, 350);
@@ -202,53 +158,24 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // FIX FULLSCREEN: Przebudowa interfejsu w guzik inicjujący (tryb START v43.8)
-        html5QrCode.stop().then(() => { 
-            document.getElementById("scanner-box").style.display = "none"; 
-            document.getElementById("btn-torch").style.display = "none";
-            document.getElementById("brand-title").style.display = "none"; 
-            
-            const orderValElem = document.getElementById("order-val");
-            
-            // Zamiana tekstu w przycisk wymuszający kliknięcie użytkownika
-            orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
-            orderValElem.classList.add("breathing"); 
-            orderValElem.style.textAlign = "center";
-            orderValElem.style.fontSize = "32px";
-            orderValElem.style.color = "#fff"; 
-            orderValElem.style.cursor = "pointer";
-            orderValElem.style.padding = "20px";
-            orderValElem.style.background = "var(--success)";
-            orderValElem.style.borderRadius = "16px";
-            orderValElem.style.marginTop = "15vh";
-            
-            // Reakcja na kliknięcie gwarantująca prawidłowe wymuszenie Fullscreen API (v43.8 fix)
-            orderValElem.onclick = () => {
-                goFullscreen();
-                
-                // Inicjalizacja Audio za zgodą przeglądarki
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-
-                // Reset stylu nagłówka
-                orderValElem.classList.remove("breathing");
-                orderValElem.innerHTML = code;
-                orderValElem.style.textAlign = "left";
-                orderValElem.style.fontSize = "26px";
-                orderValElem.style.background = "transparent";
-                orderValElem.style.padding = "0";
-                orderValElem.style.marginTop = "0";
-                orderValElem.onclick = null;
-                orderValElem.style.cursor = "default";
-
-                document.getElementById("global-progress-bar").style.display = "block"; 
-                document.getElementById("btn-finish-icon").style.display = "flex"; 
-                
-                fetchNext(0); 
-            };
-        });
+        document.getElementById("brand-title").style.display = "none"; 
+        const orderValElem = document.getElementById("order-val");
+        orderValElem.innerText = code;
+        orderValElem.classList.remove("breathing"); 
+        orderValElem.style.textAlign = "left";
+        orderValElem.style.fontSize = "26px";
+        orderValElem.style.color = "#fff"; 
         
+        document.getElementById("global-progress-bar").style.display = "block"; 
+
+        setTimeout(() => { 
+            html5QrCode.stop().then(() => { 
+                document.getElementById("scanner-box").style.display = "none"; 
+                document.getElementById("btn-torch").style.display = "none";
+                document.getElementById("btn-finish-icon").style.display = "flex"; 
+                fetchNext(0); 
+            }); 
+        }, 300); 
     } else if (code === targetItem.ean) {
         isProcessing = true;
         playSound('success');
@@ -276,20 +203,7 @@ async function startQR() {
     document.body.className = "qr-mode"; 
     document.getElementById("scanner-instruction").style.display = "none"; 
     document.getElementById("btn-torch").style.display = "none"; 
-    
-    try {
-        await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
-        const orderValElem = document.getElementById("order-val");
-        orderValElem.innerText = "ZESKANUJ KOD QR";
-        orderValElem.style.cursor = "default";
-        orderValElem.onclick = null;
-    } catch (err) {
-        console.warn("Wymagana zgoda na kamerę:", err);
-        const orderValElem = document.getElementById("order-val");
-        orderValElem.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
-        orderValElem.style.cursor = "pointer";
-        orderValElem.onclick = () => startQR(); 
-    }
+    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan); 
 }
 
 async function startEAN() {
@@ -301,12 +215,7 @@ async function startEAN() {
     document.getElementById("btn-torch").style.display = "flex"; 
     document.getElementById("btn-torch").classList.remove('active');
     torchOn = false;
-    
-    try {
-        await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
-    } catch (e) {
-        showError("BŁĄD KAMERY");
-    }
+    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
 
 function updateDisplay(val) {
@@ -316,7 +225,7 @@ function updateDisplay(val) {
 
 function flashDisplayError() {
     playSound('error');
-    speakVoice("Niewłaściwa ilość"); 
+    speakVoice("Zły produkt"); 
     const disp = document.getElementById("qty-input-display");
     disp.classList.add("flash-error");
     setTimeout(() => disp.classList.remove("flash-error"), 300);
@@ -348,7 +257,7 @@ document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
         
         if (newVal > targetItem.pozostalo) {
             playSound('error'); 
-            speakVoice("Niewłaściwa ilość"); 
+            speakVoice("Zły produkt");
             btn.classList.add('flash-error'); 
             setTimeout(() => { btn.classList.remove('flash-error'); }, 300); 
         } else {
@@ -404,13 +313,7 @@ function sendVal(q) {
 function showError(m) { 
     isProcessing = true; 
     playSound('error'); 
-    
-    if(m && m.toUpperCase().includes("ILOŚĆ")) {
-        speakVoice("Niewłaściwa ilość");
-    } else {
-        speakVoice("Zły produkt");
-    }
-
+    speakVoice("Zły produkt"); 
     const o = document.getElementById("error-overlay"); 
     document.getElementById("error-text").innerText = m; 
     o.style.display = "flex"; 
@@ -433,8 +336,6 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// Podpięcie Fullscreen pod dowolne kliknięcie (v43.6 fix, v43.8 fix)
-// Ta funkcja jest teraz wywoływana w trybie START, ale zostawiam jako fallback.
 document.body.addEventListener('click', () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
