@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5eJzgmUMIfAsTZ5c1Ryu_CtCLXpQg3IdUU2L8b08bA_otpW92MWsStlHDK9-OKkN3/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0cYPNDNlO2Y6oNh60yvKn8YZe0YESjfHLCyGp2eiphmUi5ufuBdLPefAtfX0hXnmu/exec"; 
 const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big/"; 
 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
@@ -31,6 +31,8 @@ function unlockAudioAPI() {
         window.speechSynthesis.speak(u);
     }
 }
+document.body.addEventListener('click', unlockAudioAPI, { once: true });
+document.body.addEventListener('touchstart', unlockAudioAPI, { once: true });
 
 function goFullscreen() {
     if (!document.fullscreenElement) {
@@ -252,6 +254,7 @@ function onScan(text) {
     if (isProcessing) return; 
     const code = text.trim();
     
+    // START - Logika pierwszego kodu QR
     if (!currentOrderID) {
         isProcessing = true; 
         document.getElementById("qr-instruction").innerText = "WERYFIKACJA...";
@@ -286,6 +289,7 @@ function onScan(text) {
                     orderValElem.style.marginTop = "15vh";
                     orderValElem.style.width = "100%";
                     
+                    // Odczytanie TTS dla poprawnego zamówienia
                     speakVoice(`Ilość pozycji zamówienia ${res.items_count}. Dotknij aby rozpocząć.`);
                     
                     orderValElem.onclick = () => {
@@ -309,8 +313,9 @@ function onScan(text) {
                     };
                 });
             } else {
+                // Gdy zamówienia nie ma - pika i mruga na czerwono
                 triggerScanVisual('error');
-                showError(res.msg, true); // true = wycisza piknięcie, odtwarza sam głos
+                showError("NIE ZNALEZIONO ZAMÓWIENIA"); 
                 document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR";
             }
         })
@@ -347,14 +352,25 @@ async function startQR() {
     isProcessing = false; 
     document.body.className = "qr-mode"; 
     
+    document.getElementById("header-main-row").style.display = "none";
+    document.getElementById("startup-screen-elements").style.display = "flex";
+    
     document.getElementById("scanner-instruction").style.display = "none"; 
     document.getElementById("btn-torch").style.display = "none"; 
     document.getElementById("btn-back-scan").style.display = "none"; 
+    
+    const qrInst = document.getElementById("qr-instruction");
+    qrInst.innerText = "ZESKANUJ KOD QR";
+    qrInst.style.cursor = "default";
+    qrInst.onclick = null;
     
     try {
         await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
     } catch (err) {
         console.warn("Wymagana zgoda na kamerę:", err);
+        qrInst.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
+        qrInst.style.cursor = "pointer";
+        qrInst.onclick = () => startQR(); 
     }
 }
 
@@ -474,19 +490,16 @@ function sendVal(q) {
     });
 }
 
-function showError(m, muteBeep = false) { 
+function showError(m) { 
     isProcessing = true; 
-    
-    if(!muteBeep) {
-        playSound('error'); 
-    }
+    playSound('error'); 
     
     if(m && m.toUpperCase().includes("ILOŚĆ")) {
         speakVoice("Niewłaściwa ilość");
     } else if (m && (m.toUpperCase().includes("POŁĄCZENIE") || m.toUpperCase().includes("ZAPISU") || m.toUpperCase().includes("SIECI"))) {
         speakVoice("Błąd sieci");
     } else if (m && m.toUpperCase().includes("NIE ZNALEZIONO")) {
-        speakVoice("NIE ZNALEZIONO ZAMÓWIENIA"); 
+        // Blokada TTS dla błędu QR - celowe wyciszenie zgodnie z życzeniem
     } else if (m && m.toUpperCase().includes("ZREALIZOWANE")) {
         speakVoice("Zamówienie zrealizowane");
     } else {
@@ -519,21 +532,5 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// INICJALIZACJA WYMUSZAJĄCA DOTYK
-document.getElementById("header-main-row").style.display = "none";
-document.getElementById("startup-screen-elements").style.display = "flex";
-
-const qrInst = document.getElementById("qr-instruction");
-qrInst.innerHTML = "DOTKNIJ EKRAN<br><span style='font-size:16px; color:var(--text-sec);'>ABY URUCHOMIĆ SKANER</span>";
-qrInst.style.cursor = "pointer";
-
-let scannerStarted = false;
-document.body.addEventListener('click', () => {
-    unlockAudioAPI();
-    if(!scannerStarted) {
-        scannerStarted = true;
-        qrInst.innerHTML = "ZESKANUJ KOD QR";
-        qrInst.style.cursor = "default";
-        startQR();
-    }
-});
+// POWRÓT DO PIERWOTNEGO AUTOSTARTU
+startQR();
