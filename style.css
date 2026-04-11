@@ -16,7 +16,6 @@ header { padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; display: flex
 body.qr-mode #scanner-visual { width: 250px; height: 250px; }
 body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 
-/* Dynamiczny celownik */
 .corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; transition: border-color 0.2s ease; }
 .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
@@ -57,7 +56,6 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #qty-input { width: 120px; height: 80px; background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 42px; text-align: center; outline: none; transition: border-color 0.2s; }
 #qty-input:focus { border-color: var(--accent); }
 
-/* Zmiany dla Front 4 */
 #qty-kat-val { font-size: 18px; color: var(--text-sec); display: block; margin-top: 8px; }
 #qty-kat-val .kat-number { color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
 #qty-kat-val .size-number { color: var(--error); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
@@ -68,17 +66,22 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #btn-quick-max { color: var(--error); border-color: #3a3a3c; }
 #btn-quick-max:active { background: var(--error); color: #fff; border-color: var(--error); }
 
-/* Nowa animacja dla przycisku ZATWIERDŹ (paski postępu) */
+/* --- Zmiany Front 4: Przycisk i stan ładowania --- */
 .btn-success { 
     flex-grow: 1; border-radius: 16px; background-color: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; 
-    transition: transform 0.1s ease;
-    
-    /* Dodany efekt paska postępu */
+    transition: transform 0.1s ease, background-color 0.2s;
+}
+.btn-success:active { transform: scale(0.96); background-color: #28b83c; }
+
+/* Ta klasa jest dodawana przez JS w momencie wysyłania do serwera */
+.btn-success.is-loading {
+    background-color: #28b83c; /* Ciemniejsze zielone na czas ładowania */
     background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
     background-size: 40px 40px;
     animation: stripe-loading 1s linear infinite;
+    pointer-events: none; /* Zapobiega podwójnemu kliknięciu */
+    opacity: 0.9;
 }
-.btn-success:active { transform: scale(0.96); background-color: #28b83c; }
 @keyframes stripe-loading {
     from { background-position: 40px 0; }
     to { background-position: 0 0; }
