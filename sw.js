@@ -1,10 +1,11 @@
-const CACHE_NAME = 'b2b-terminal-v44.1';
+const CACHE_NAME = 'b2b-terminal-v1.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
   './manifest.json',
+  './logo.png',
   'https://unpkg.com/html5-qrcode'
 ];
 
@@ -17,7 +18,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Nie cachujemy wywołań do skryptów Google (zawsze muszą być "świeże")
+  // Omijamy cache dla wywołań serwerowych GAS
   if (event.request.url.includes('script.google.com')) return;
 
   event.respondWith(
