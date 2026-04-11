@@ -6,7 +6,8 @@ header { padding: calc(env(safe-area-inset-top) + 15px) 20px 15px; background: v
 .brand-title { font-size: 11px; font-weight: 800; color: var(--text-sec); letter-spacing: 1px; text-align: center; width: 100%; transition: opacity 0.3s; }
 .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px; }
 
-#order-val { font-size: 22px; font-weight: 900; color: var(--success); flex-grow: 1; text-align: center; transition: all 0.3s ease; }
+/* order-val musi wspierać wieloliniowy tekst dla przycisku START */
+#order-val { font-size: 22px; font-weight: 900; color: var(--success); flex-grow: 1; text-align: center; transition: all 0.3s ease; box-sizing: border-box; }
 #order-val.breathing { display: block; animation: text-breathe 2s infinite ease-in-out; }
 
 #btn-finish-icon { background: var(--error); border: none; color: #fff; height: 44px; padding: 0 20px; border-radius: 12px; font-size: 14px; font-weight: 800; display: none; align-items: center; justify-content: center; cursor: pointer; letter-spacing: 1px; transition: transform 0.1s, background 0.2s; box-shadow: 0 4px 10px rgba(255, 69, 58, 0.2); }
@@ -45,27 +46,31 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 .ean-mode #laser-line { display: block; }
 #scanner-visual.scan-success #laser-line { background: var(--success); box-shadow: 0 0 10px var(--success); }
 
-.task-card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid #3a3a3c; margin: 15px; text-align: center; touch-action: pan-y; }
-.task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.btn-circle { width: 48px; height: 48px; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; font-size: 18px; }
-#task-name { font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+/* Optymalizacja wysokości karty (mniejsze paddingi zapobiegają scrolowaniu) */
+.task-card { background: var(--card-bg); border-radius: 24px; padding: 15px; border: 1px solid #3a3a3c; margin: 10px; text-align: center; touch-action: pan-y; }
+.task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.btn-circle { width: 40px; height: 40px; border-radius: 12px; background: #2c2c2e; border: none; color: #fff; font-size: 16px; }
+#task-name { font-size: 20px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
 
-/* FIX ZDJĘCIA (v43.7): Kwadrat (aspect-ratio: 1/1) i brak marginesów bocznych */
-.product-image-box { width: calc(100% + 50px); aspect-ratio: 1 / 1; margin: 0 -25px 15px -25px; display: flex; align-items: center; justify-content: center; background: #fff; border-top: 1px solid #3a3a3c; border-bottom: 1px solid #3a3a3c; overflow: hidden; cursor: zoom-in; }
+/* FIX ZDJĘCIA (v43.8): Maksymalna wysokość i responsywność bez aspect-ratio */
+.product-image-box { width: calc(100% + 30px); height: 16vh; min-height: 100px; max-height: 140px; margin: 0 -15px 10px -15px; display: flex; align-items: center; justify-content: center; background: #fff; border-top: 1px solid #3a3a3c; border-bottom: 1px solid #3a3a3c; overflow: hidden; cursor: zoom-in; }
 #task-img { width: 100%; height: 100%; object-fit: contain; }
 
 #image-zoom-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; cursor: zoom-out; }
 #image-zoom-overlay.show { opacity: 1; }
 #zoomed-img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
 
-.product-meta-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 17px; }
+.product-meta-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 16px; }
 #task-kat { color: var(--accent); font-weight: 700; }
 .meta-separator { color: #3a3a3c; }
 #task-size { color: var(--bright-green); font-weight: 900; }
-.task-qty-box { background: #000; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
-#task-qty { font-size: 60px; font-weight: 900; color: var(--success); }
-#task-notes-row { font-size: 15px; color: #fff; margin-bottom: 15px; }
+
+/* FIX Ilości: zmniejszone paddingi i font */
+.task-qty-box { background: #000; border-radius: 16px; padding: 10px; margin-bottom: 10px; }
+#task-qty { font-size: 48px; font-weight: 900; transition: color 0.3s; }
+#task-notes-row { font-size: 15px; color: #fff; margin-bottom: 10px; }
 #task-notes { color: var(--error); font-weight: 900; text-transform: uppercase; }
+
 .btn-primary { width: 100%; height: 60px; border-radius: 16px; background: var(--accent); border: none; color: #fff; font-size: 18px; font-weight: 700; }
 #product-data-area { position: relative; }
 #freeze-overlay { display: none; position: absolute; inset: -15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10; border-radius: 20px; }
