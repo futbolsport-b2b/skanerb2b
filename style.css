@@ -47,6 +47,10 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 .task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .btn-circle { width: 48px; height: 48px; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; font-size: 18px; }
 #task-name { font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+
+.product-image-box { width: 100%; height: 140px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 16px; border: 1px solid #3a3a3c; overflow: hidden; }
+#task-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
 .product-meta-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 17px; }
 #task-kat { color: var(--accent); font-weight: 700; }
 .meta-separator { color: #3a3a3c; }
@@ -67,7 +71,7 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 
 #qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; align-items: flex-end; }
 .sheet { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); border-top: 1px solid #3a3a3c; animation: slideUp 0.3s ease-out; }
-.remain-badge { background: rgba(50, 215, 75, 0.1); color: var(--success); padding: 12px; border-radius: 14px; margin: 20px 0 15px; text-align: center; font-weight: 700; }
+.remain-badge { background: rgba(50, 215, 75, 0.1); color: var(--success); padding: 12px; border-radius: 14px; margin: 15px 0; text-align: center; font-weight: 700; }
 #qty-kat-val { font-size: 18px; color: var(--text-sec); display: block; margin-top: 8px; }
 #qty-kat-val .kat-number { color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
 #qty-kat-val .size-number { color: var(--error); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
@@ -79,22 +83,22 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #btn-quick-max { color: var(--error); border-color: #3a3a3c; }
 #btn-quick-max:active { background: var(--error); color: #fff; border-color: var(--error); }
 
-.custom-input-display { background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 48px; font-weight: 900; text-align: center; padding: 10px; margin-bottom: 15px; height: 60px; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s; }
+.custom-input-display { background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 48px; font-weight: 900; text-align: center; padding: 5px; margin-bottom: 15px; height: 55px; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s; }
 .custom-input-display.flash-error { border-color: var(--error); color: var(--error); }
 .custom-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-.np-btn { height: 60px; font-size: 26px; font-weight: 800; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; cursor: pointer; transition: background 0.1s, transform 0.1s; }
+.np-btn { height: 50px; font-size: 22px; font-weight: 800; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; cursor: pointer; transition: background 0.1s, transform 0.1s; }
 .np-btn:active { background: #48484a; transform: scale(0.96); }
-.np-action { color: var(--error); font-size: 24px; }
+.np-action { color: var(--error); font-size: 22px; }
 
-.input-group { display: flex; margin-bottom: 15px; }
-.btn-success { flex-grow: 1; border-radius: 16px; background-color: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 70px; transition: transform 0.1s ease, background-color 0.2s; position: relative; }
+.modal-action-row { display: flex; gap: 15px; width: 100%; }
+.btn-success { flex: 2; border-radius: 16px; background-color: var(--success); border: none; color: #fff; font-size: 18px; font-weight: 800; height: 60px; transition: transform 0.1s ease, background-color 0.2s; position: relative; }
 .btn-success:active { transform: scale(0.96); background-color: #28b83c; }
 .btn-success.is-loading { background-color: #2c2c2e; color: transparent; pointer-events: none; }
-.btn-success.is-loading::after { content: ""; position: absolute; top: 50%; left: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border: 3px solid rgba(255, 255, 255, 0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin-smooth 0.8s linear infinite; }
+.btn-success.is-loading::after { content: ""; position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; border: 3px solid rgba(255, 255, 255, 0.15); border-top-color: var(--accent); border-radius: 50%; animation: spin-smooth 0.8s linear infinite; }
+
+.btn-cancel { flex: 1; height: 60px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; transition: background 0.2s; }
+.btn-cancel:active { background: #3a3a3c; }
 
 @keyframes spin-smooth { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; transition: background 0.2s; }
-.btn-cancel:active { background: #3a3a3c; }
 #error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 69, 58, 0.95); z-index: 9999; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
