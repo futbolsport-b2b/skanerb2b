@@ -45,32 +45,37 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 @keyframes progressMove { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
 #qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; align-items: flex-end; }
 .sheet { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); border-top: 1px solid #3a3a3c; animation: slideUp 0.3s ease-out; }
-.remain-badge { background: rgba(50, 215, 75, 0.1); color: var(--success); padding: 12px; border-radius: 14px; margin: 20px 0; text-align: center; font-weight: 700; }
+.remain-badge { background: rgba(50, 215, 75, 0.1); color: var(--success); padding: 12px; border-radius: 14px; margin: 20px 0 15px; text-align: center; font-weight: 700; }
 .input-group { display: flex; gap: 15px; margin-bottom: 15px; }
-#qty-input { width: 120px; height: 80px; background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 42px; text-align: center; outline: none; }
-.btn-success { flex-grow: 1; border-radius: 16px; background: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; }
-.btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; margin-top: 15px; }
+#qty-input { width: 120px; height: 80px; background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 42px; text-align: center; outline: none; transition: border-color 0.2s; }
+#qty-input:focus { border-color: var(--accent); }
+
+/* Zmiany dla Front 4: Numery i Rozmiary */
+#qty-kat-val { font-size: 18px; color: var(--text-sec); display: block; margin-top: 8px; }
+#qty-kat-val .kat-number { color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
+#qty-kat-val .size-number { color: var(--error); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
+
+/* Zmiany dla Front 4: Przyciski szybkiego dodawania */
+.quick-add-row { display: flex; gap: 10px; margin-bottom: 15px; }
+.btn-quick { flex: 1; padding: 14px; background: #2c2c2e; border: 2px solid #3a3a3c; border-radius: 14px; color: var(--accent); font-size: 18px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
+.btn-quick:active { background: var(--accent); color: #fff; transform: scale(0.95); border-color: var(--accent); }
+#btn-quick-max { color: var(--error); border-color: #3a3a3c; }
+#btn-quick-max:active { background: var(--error); color: #fff; border-color: var(--error); }
+
+/* Zmiany dla Front 4: Animacja ZATWIERDŹ */
+.btn-success { 
+    flex-grow: 1; border-radius: 16px; background: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; 
+    transition: transform 0.1s ease;
+    animation: pulse-btn 2s infinite; 
+}
+.btn-success:active { transform: scale(0.96); animation: none; background: #28b83c; }
+@keyframes pulse-btn {
+    0% { box-shadow: 0 0 0 0 rgba(50, 215, 75, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(50, 215, 75, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(50, 215, 75, 0); }
+}
+
+.btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; margin-top: 15px; transition: background 0.2s; }
+.btn-cancel:active { background: #3a3a3c; }
 #error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 69, 58, 0.95); z-index: 9999; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-/* Modyfikacje dla Front 4 */
-#qty-kat-val {
-    font-size: 18px; 
-    color: var(--text-sec);
-    display: block;
-    margin-top: 8px; 
-}
-
-#qty-kat-val .kat-number {
-    color: var(--accent); 
-    font-weight: 900; 
-    font-size: 22px; 
-    letter-spacing: 1px;
-}
-
-#qty-kat-val .size-number {
-    color: var(--error); 
-    font-weight: 900; 
-    font-size: 22px; 
-    letter-spacing: 1px;
-}
