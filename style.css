@@ -67,3 +67,10 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
     font-size: 22px; 
     letter-spacing: 1px;
 }
+
+#qty-kat-val .size-number {
+    color: var(--error); 
+    font-weight: 900; 
+    font-size: 22px; 
+    letter-spacing: 1px;
+}
