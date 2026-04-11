@@ -258,6 +258,9 @@ function onScan(text) {
     if (isProcessing) return; 
     const code = text.trim();
     
+    // ZMIANA: Natychmiastowy sygnał fizycznego odczytania kodu (jak w fizycznym urządzeniu)
+    playSound('success');
+    
     // START - Logika pierwszego kodu QR
     if (!currentOrderID) {
         isProcessing = true; 
@@ -266,11 +269,10 @@ function onScan(text) {
         fetchWithRetry(`${SCRIPT_URL}?orderID=${encodeURIComponent(code)}&action=check_order`)
         .then(res => {
             if (res.status === "success") {
-                // Gdy zamówienie odnaleziono
-                playSound('success');
                 triggerScanVisual('success'); // Celownik na zielono
                 currentOrderID = code; 
 
+                // ZMIANA: Przedłużone opóźnienie aby oko ludzkie zarejestrowało zieloną ramkę
                 setTimeout(() => {
                     html5QrCode.stop().then(() => { 
                         document.getElementById("scanner-box").style.display = "none"; 
@@ -295,12 +297,12 @@ function onScan(text) {
                         orderValElem.style.marginTop = "15vh";
                         orderValElem.style.width = "100%";
                         
-                        // ZMIANA: Syntezator podpięty pod kliknięcie
                         orderValElem.onclick = () => {
                             goFullscreen();
                             unlockAudioAPI();
 
-                            speakVoice(`Ilość pozycji zamówienia ${res.items_count}. Dotknij aby rozpocząć.`);
+                            // ZMIANA: Usunięto tekst "Dotknij aby rozpocząć"
+                            speakVoice(`Ilość pozycji zamówienia ${res.items_count}`);
 
                             orderValElem.classList.remove("breathing");
                             orderValElem.innerHTML = code;
@@ -318,12 +320,12 @@ function onScan(text) {
                             fetchNext(0); 
                         };
                     });
-                }, 600); // 600 milisekund trwania zielonej ramki przed zamknięciem
+                }, 600); 
 
             } else {
-                // Gdy kod QR jest błędny
+                // Kod był zły -> Ramka na czerwono i buczenie "error" z błędem na ekranie
                 triggerScanVisual('error');
-                showError("NIE ZNALEZIONO ZAMÓWIENIA", true); // "true" wycisza syntezator, samo pikanie
+                showError("NIE ZNALEZIONO ZAMÓWIENIA", true); // "true" blokuje podwójny dźwięk
                 document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR";
             }
         })
@@ -336,7 +338,6 @@ function onScan(text) {
     } else if (code === targetItem.ean) {
         // SKANOWANIE EAN PRODUKTU
         isProcessing = true;
-        playSound('success');
         triggerScanVisual('success');
         
         setTimeout(() => { 
@@ -500,17 +501,23 @@ function sendVal(q) {
     });
 }
 
-function showError(m, muteBeep = false) { 
+function showError(m, preventDoubleSound = false) { 
     isProcessing = true; 
     
-    playSound('error'); 
+    if(!preventDoubleSound) {
+        playSound('error'); 
+    } else {
+        // Ponieważ w onScan zrobiliśmy już playSound('success') (jako potwierdzenie zczytania fizycznego)
+        // Odtwarzamy dźwięk błędu z opóźnieniem jako odpowiedź serwera: pip... BUZZ!
+        setTimeout(() => { playSound('error'); }, 150); 
+    }
     
     if(m && m.toUpperCase().includes("ILOŚĆ")) {
         speakVoice("Niewłaściwa ilość");
     } else if (m && (m.toUpperCase().includes("POŁĄCZENIE") || m.toUpperCase().includes("ZAPISU") || m.toUpperCase().includes("SIECI"))) {
         speakVoice("Błąd sieci");
     } else if (m && m.toUpperCase().includes("NIE ZNALEZIONO")) {
-        // Wyciszono wymawianie TTS dla błędnego QR - zachowano tylko sygnał dźwiękowy i ekran
+        // Wyciszono
     } else if (m && m.toUpperCase().includes("ZREALIZOWANE")) {
         speakVoice("Zamówienie zrealizowane");
     } else {
@@ -543,5 +550,5 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// CZYSTY AUTOSTART OD RAZU PO ZAŁADOWANIU
+// AUTOSTART KAMERY
 startQR();
