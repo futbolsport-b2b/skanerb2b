@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v42.0</title>
-    <link rel="stylesheet" href="style.css?v=42.0">
+    <title>B2B TERMINAL v42.1</title>
+    <link rel="stylesheet" href="style.css?v=42.1">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
     <div id="error-overlay"><div id="error-text">BŁĄD</div></div>
+    
     <div class="app-container">
         <header>
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.0</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.1</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
                     <div id="order-val">ZESKANUJ KOD QR</div>
                 </div>
             </div>
-            <button id="btn-finish-icon" style="display:none;">✕</button>
+            <button id="btn-finish-icon">✕</button>
         </header>
 
         <main id="main-view">
@@ -45,6 +46,7 @@
                         <span class="task-lp-info">POZYCJA <b id="task-lp">--</b></span>
                         <button id="btn-next" class="btn-circle">▶</button>
                     </div>
+                    
                     <div class="task-content" id="product-data-area">
                         <div id="freeze-overlay"></div>
                         <h1 id="task-name">Ładowanie...</h1>
@@ -64,9 +66,12 @@
                             UWAGI: <b id="task-notes">---</b>
                         </div>
                     </div>
+
                     <div id="task-action-container">
                         <button id="btn-scan-item" class="btn-primary">SKANUJ PRODUKT</button>
-                        <div id="loading-bar-wrapper"><div id="loading-bar-inner"></div></div>
+                        <div id="loading-bar-wrapper">
+                            <div id="loading-bar-inner"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -87,6 +92,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=42.0"></script>
+    <script src="app.js?v=42.1"></script>
 </body>
 </html>
