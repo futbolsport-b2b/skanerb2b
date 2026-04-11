@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v42.8</title>
-    <link rel="stylesheet" href="style.css?v=42.8">
+    <title>B2B TERMINAL v43.0</title>
+    <link rel="stylesheet" href="style.css?v=43.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
     <div id="error-overlay"><div id="error-text">BŁĄD</div></div>
     
     <div class="app-container">
+        <div id="global-progress-bar"><div id="global-progress-fill"></div></div>
+
         <header>
             <div id="header-content">
-                <div class="brand-row"><span class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.42.8</span></div>
+                <div class="brand-row"><span class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.0</span></div>
                 <div id="order-info"><div id="order-val" class="breathing">ZESKANUJ KOD QR</div></div>
             </div>
             <button id="btn-finish-icon">✕</button>
@@ -21,6 +25,8 @@
 
         <main id="main-view">
             <section id="scanner-box">
+                <button id="btn-torch" style="display:none;">🔦</button>
+
                 <div id="scanner-instruction" style="display:none;">
                     <span class="instruction-label">ZESKANUJ PRODUKT:</span>
                     <div id="target-kat-display"><span id="target-kat-val">---</span><span class="ean-meta-sep">|</span><span class="ean-size-container"><b>ROZ:</b> <b id="target-size-val">---</b></span></div>
@@ -70,8 +76,24 @@
                     <button class="btn-quick" id="btn-quick-max">MAX</button>
                 </div>
 
+                <div id="qty-input-display" class="custom-input-display">0</div>
+                
+                <div class="custom-numpad">
+                    <button class="np-btn" data-val="1">1</button>
+                    <button class="np-btn" data-val="2">2</button>
+                    <button class="np-btn" data-val="3">3</button>
+                    <button class="np-btn" data-val="4">4</button>
+                    <button class="np-btn" data-val="5">5</button>
+                    <button class="np-btn" data-val="6">6</button>
+                    <button class="np-btn" data-val="7">7</button>
+                    <button class="np-btn" data-val="8">8</button>
+                    <button class="np-btn" data-val="9">9</button>
+                    <button class="np-btn np-action" id="np-clear">C</button>
+                    <button class="np-btn" data-val="0">0</button>
+                    <button class="np-btn np-action" id="np-del">⌫</button>
+                </div>
+
                 <div class="input-group">
-                    <input type="number" id="qty-input" inputmode="numeric" placeholder="0">
                     <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
                 </div>
                 <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
@@ -79,6 +101,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=42.8"></script>
+    <script src="app.js?v=43.0"></script>
 </body>
 </html>
