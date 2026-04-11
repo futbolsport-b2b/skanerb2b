@@ -6,7 +6,7 @@ let currentInputValue = "0";
 let zoomTimeout = null; 
 const html5QrCode = new Html5Qrcode("reader");
 
-// Funkcja Fullscreen
+// Funkcja Fullscreen dla JS
 function goFullscreen() {
     if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) {
@@ -145,23 +145,9 @@ async function fetchNext(offset) {
                 document.getElementById("task-lp").innerText = targetItem.lp; 
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
+                document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
                 
-                // === Wdrożenie warunku na kolor dla DO POBRANIA ===
-                const qtyElem = document.getElementById("task-qty");
-                qtyElem.innerText = targetItem.pozostalo;
-                const notesRow = document.getElementById("task-notes-row");
-                
-                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
-                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
-                    notesRow.style.display = "block"; 
-                    qtyElem.style.color = "var(--error)"; // Czerwony jeśli są uwagi
-                } else { 
-                    notesRow.style.display = "none"; 
-                    qtyElem.style.color = "var(--success)"; // Standardowy zielony
-                }
-                
-                // Generowanie zdjęcia
                 const imgBox = document.getElementById("product-image-box");
                 const imgElem = document.getElementById("task-img");
                 imgElem.src = "";
@@ -177,6 +163,13 @@ async function fetchNext(offset) {
                     imgBox.style.display = "none";
                 }
 
+                const notesRow = document.getElementById("task-notes-row");
+                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
+                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
+                    notesRow.style.display = "block"; 
+                } else { 
+                    notesRow.style.display = "none"; 
+                }
                 document.getElementById("task-panel").style.display = "block"; 
                 setLoadingState(false);
             }, 350);
@@ -200,15 +193,13 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // FIX FULLSCREEN: Przebudowa interfejsu w guzik inicjujący
+        // Aktywacja Trybu START (v43.6 fix)
         html5QrCode.stop().then(() => { 
             document.getElementById("scanner-box").style.display = "none"; 
             document.getElementById("btn-torch").style.display = "none";
             document.getElementById("brand-title").style.display = "none"; 
             
             const orderValElem = document.getElementById("order-val");
-            
-            // Zamiana tekstu w przycisk wymuszający kliknięcie użytkownika
             orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
             orderValElem.classList.add("breathing"); 
             orderValElem.style.textAlign = "center";
@@ -220,7 +211,6 @@ function onScan(text) {
             orderValElem.style.borderRadius = "16px";
             orderValElem.style.marginTop = "15vh";
             
-            // Reakcja na kliknięcie gwarantująca prawidłowe wymuszenie Fullscreen API
             orderValElem.onclick = () => {
                 goFullscreen();
                 
