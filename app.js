@@ -174,7 +174,6 @@ async function fetchNext(offset) {
     setLoadingState(true); 
     currentOffset = offset;
     try {
-        // Używamy zoptymalizowanego mechanizmu z Retry
         const res = await fetchWithRetry(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`);
         
         if(res.progress !== undefined) {
@@ -237,7 +236,6 @@ async function fetchNext(offset) {
             location.reload(); 
         }
     } catch (e) {
-        // Fallback w przypadku ostatecznej awarii sieci pomimo ponowień
         setLoadingState(false); 
         showError("Brak połączenia! Spróbuj ponownie.");
     }
