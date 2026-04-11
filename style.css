@@ -15,13 +15,20 @@ header { padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; display: flex
 #scanner-visual { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; transition: all 0.3s; }
 body.qr-mode #scanner-visual { width: 250px; height: 250px; }
 body.ean-mode #scanner-visual { width: 310px; height: 120px; }
-.corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; }
+
+/* Dynamiczny celownik */
+.corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; transition: border-color 0.2s ease; }
 .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
 .corner.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
 .corner.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
-#laser-line { display: none; position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: var(--error); box-shadow: 0 0 10px var(--error); }
+#scanner-visual.scan-success .corner { border-color: var(--success); }
+#scanner-visual.scan-error .corner { border-color: var(--error); }
+
+#laser-line { display: none; position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: var(--error); box-shadow: 0 0 10px var(--error); transition: background 0.2s, box-shadow 0.2s; }
 .ean-mode #laser-line { display: block; }
+#scanner-visual.scan-success #laser-line { background: var(--success); box-shadow: 0 0 10px var(--success); }
+
 .task-card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid #3a3a3c; margin: 15px; text-align: center; }
 .task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .btn-circle { width: 48px; height: 48px; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; font-size: 18px; }
@@ -50,29 +57,31 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #qty-input { width: 120px; height: 80px; background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 42px; text-align: center; outline: none; transition: border-color 0.2s; }
 #qty-input:focus { border-color: var(--accent); }
 
-/* Zmiany dla Front 4: Numery i Rozmiary */
+/* Zmiany dla Front 4 */
 #qty-kat-val { font-size: 18px; color: var(--text-sec); display: block; margin-top: 8px; }
 #qty-kat-val .kat-number { color: var(--accent); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
 #qty-kat-val .size-number { color: var(--error); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
 
-/* Zmiany dla Front 4: Przyciski szybkiego dodawania */
 .quick-add-row { display: flex; gap: 10px; margin-bottom: 15px; }
 .btn-quick { flex: 1; padding: 14px; background: #2c2c2e; border: 2px solid #3a3a3c; border-radius: 14px; color: var(--accent); font-size: 18px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
 .btn-quick:active { background: var(--accent); color: #fff; transform: scale(0.95); border-color: var(--accent); }
 #btn-quick-max { color: var(--error); border-color: #3a3a3c; }
 #btn-quick-max:active { background: var(--error); color: #fff; border-color: var(--error); }
 
-/* Zmiany dla Front 4: Animacja ZATWIERDŹ */
+/* Nowa animacja dla przycisku ZATWIERDŹ (paski postępu) */
 .btn-success { 
-    flex-grow: 1; border-radius: 16px; background: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; 
+    flex-grow: 1; border-radius: 16px; background-color: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; 
     transition: transform 0.1s ease;
-    animation: pulse-btn 2s infinite; 
+    
+    /* Dodany efekt paska postępu */
+    background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+    background-size: 40px 40px;
+    animation: stripe-loading 1s linear infinite;
 }
-.btn-success:active { transform: scale(0.96); animation: none; background: #28b83c; }
-@keyframes pulse-btn {
-    0% { box-shadow: 0 0 0 0 rgba(50, 215, 75, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(50, 215, 75, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(50, 215, 75, 0); }
+.btn-success:active { transform: scale(0.96); background-color: #28b83c; }
+@keyframes stripe-loading {
+    from { background-position: 40px 0; }
+    to { background-position: 0 0; }
 }
 
 .btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; margin-top: 15px; transition: background 0.2s; }
