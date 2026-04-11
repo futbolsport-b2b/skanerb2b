@@ -21,8 +21,11 @@ header { padding: calc(env(safe-area-inset-top) + 15px) 20px 15px; background: v
 #btn-torch { position: absolute; top: 15px; right: 15px; z-index: 200; background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s; }
 #btn-torch.active { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
 
-#reader { width: 100% !important; height: 100% !important; font-size: 0; color: transparent; }
+/* FIX ZGODY KAMERY: Zamiast font-size 0, ukrywamy bezpiecznie tylko teksty biblioteki, zostawiając wideo */
+#reader { width: 100% !important; height: 100% !important; }
 #reader video { object-fit: cover !important; }
+#reader > *:not(video):not(canvas) { display: none !important; }
+
 #scanner-instruction { position: absolute; top: 15px; width: 100%; text-align: center; z-index: 110; pointer-events: none; }
 #target-kat-display { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 2px; }
 #target-kat-val, .ean-meta-sep, .ean-size-container { font-size: 28px; font-weight: 900; }
