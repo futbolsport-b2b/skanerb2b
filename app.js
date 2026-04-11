@@ -118,13 +118,11 @@ async function fetchNext(offset) {
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
                 
-                // === LOGIKA ZDJĘĆ Z ZEWNĘTRZNEGO SERWERA (v43.4) ===
                 const imgBox = document.getElementById("product-image-box");
                 const imgElem = document.getElementById("task-img");
                 imgElem.src = "";
                 
                 if(targetItem.nr_kat && targetItem.nr_kat !== "---") {
-                    // Zamiana spacji i myślników na _ (np. CW6894 010 -> CW6894_010)
                     let formattedKat = String(targetItem.nr_kat).trim().replace(/[\s\-]+/g, '_');
                     let finalImageUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
                     
@@ -134,7 +132,6 @@ async function fetchNext(offset) {
                 } else {
                     imgBox.style.display = "none";
                 }
-                // ====================================================
 
                 const notesRow = document.getElementById("task-notes-row");
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
@@ -173,6 +170,8 @@ function onScan(text) {
         orderValElem.style.textAlign = "left";
         orderValElem.style.fontSize = "26px";
         orderValElem.style.color = "#fff"; 
+        orderValElem.style.cursor = "default";
+        orderValElem.onclick = null; // Czyszczenie ew. listenera po uruchomieniu ręcznym
         
         document.getElementById("global-progress-bar").style.display = "block"; 
 
@@ -206,12 +205,28 @@ function onScan(text) {
     }
 }
 
+// === FIX 43.5: Obsługa błędu inicjalizacji kamery ===
 async function startQR() { 
     isProcessing = false; 
     document.body.className = "qr-mode"; 
     document.getElementById("scanner-instruction").style.display = "none"; 
     document.getElementById("btn-torch").style.display = "none"; 
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan); 
+    
+    try {
+        await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
+        // Sukces kamery: Przywróć stan pierwotny, jeśli był wcześniej błąd
+        const orderValElem = document.getElementById("order-val");
+        orderValElem.innerText = "ZESKANUJ KOD QR";
+        orderValElem.style.cursor = "default";
+        orderValElem.onclick = null;
+    } catch (err) {
+        // Blokada przeglądarki ze względów bezpieczeństwa - wymaga User Gesture
+        console.warn("Wymagana zgoda na kamerę:", err);
+        const orderValElem = document.getElementById("order-val");
+        orderValElem.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
+        orderValElem.style.cursor = "pointer";
+        orderValElem.onclick = () => startQR(); // Ponowne wywołanie już z uprawnieniem kliknięcia
+    }
 }
 
 async function startEAN() {
@@ -223,7 +238,12 @@ async function startEAN() {
     document.getElementById("btn-torch").style.display = "flex"; 
     document.getElementById("btn-torch").classList.remove('active');
     torchOn = false;
-    await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
+    
+    try {
+        await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
+    } catch (e) {
+        showError("BŁĄD KAMERY");
+    }
 }
 
 function updateDisplay(val) {
