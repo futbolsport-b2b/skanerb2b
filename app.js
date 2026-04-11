@@ -1,4 +1,5 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby6NPDRWs8GhX1HXcA2du5jgJM8PJOu2f9iMf96RHaPjNNIAR6-a7NqkPtZtGUykZeA/exec"; 
+// v42.4 - Terminal Magazynowy - JS
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxOw4lwG1iZ0DK0WQu4qw7Y6EaU0vA7PmvU2KX5kHJiZ2gnrY_09_5_CEtGh5Dq4eq1/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
@@ -22,68 +23,42 @@ async function fetchNext(offset) {
                 document.getElementById("task-kat").innerText = targetItem.nr_kat;
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
+
                 const notesRow = document.getElementById("task-notes-row");
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") {
                     document.getElementById("task-notes").innerText = targetItem.uwagi;
                     notesRow.style.display = "block";
                 } else { notesRow.style.display = "none"; }
+
                 document.getElementById("task-panel").style.display = "block";
                 setLoadingState(false);
             }, 350);
-        } else { alert("ZREALIZOWANE"); location.reload(); }
+        } else { alert("ZAMÓWIENIE ZREALIZOWANE"); location.reload(); }
     } catch (e) { setLoadingState(false); }
-}
-
-function showQty() {
-    const m = document.getElementById("qty-modal");
-    document.getElementById("qty-name").innerText = targetItem.nazwa;
-    document.getElementById("qty-kat-val").innerText = targetItem.nr_kat;
-    document.getElementById("qty-roz-val").innerText = targetItem.rozmiar || "---";
-    document.getElementById("qty-remain").innerText = targetItem.pozostalo;
-    document.getElementById("btn-text-content").style.display = "inline";
-    document.getElementById("btn-loader").style.display = "none";
-    document.getElementById("btn-qty-ok").disabled = false;
-    m.style.display = "flex";
-    const i = document.getElementById("qty-input"); i.value = "";
-    setTimeout(() => { i.focus(); i.click(); }, 150);
-}
-
-function sendVal(q) {
-    if (!q || q <= 0) return;
-    document.getElementById("btn-text-content").style.display = "none";
-    document.getElementById("btn-loader").style.display = "block";
-    document.getElementById("btn-qty-ok").disabled = true;
-    fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
-    .then(r => r.json()).then(res => {
-        if (res.status === "success") {
-            document.getElementById("qty-modal").style.display = "none";
-            fetchNext(currentOffset);
-        } else {
-            document.getElementById("btn-text-content").style.display = "inline";
-            document.getElementById("btn-loader").style.display = "none";
-            document.getElementById("btn-qty-ok").disabled = false;
-            showError(res.msg);
-        }
-    });
 }
 
 function onScan(text) {
     if (isProcessing) return;
     const code = text.trim();
     if (!currentOrderID) {
-        isProcessing = true; currentOrderID = code;
+        isProcessing = true;
+        currentOrderID = code;
         document.getElementById("order-val").innerText = code;
-        setTimeout(() => { html5QrCode.stop().then(() => {
-            document.getElementById("scanner-box").style.display = "none";
-            document.getElementById("btn-finish-icon").style.display = "flex";
-            fetchNext(0);
-        }); }, 150);
+        setTimeout(() => {
+            html5QrCode.stop().then(() => {
+                document.getElementById("scanner-box").style.display = "none";
+                document.getElementById("btn-finish-icon").style.display = "flex";
+                fetchNext(0);
+            });
+        }, 150);
     } else if (code === targetItem.ean) {
         isProcessing = true;
-        setTimeout(() => { html5QrCode.stop().then(() => {
-            document.getElementById("scanner-box").style.display = "none";
-            if (targetItem.pozostalo > 1) showQty(); else sendVal(1);
-        }); }, 150);
+        setTimeout(() => {
+            html5QrCode.stop().then(() => {
+                document.getElementById("scanner-box").style.display = "none";
+                if (targetItem.pozostalo > 1) showQty(); else sendVal(1);
+            });
+        }, 150);
     } else { showError("BŁĘDNY PRODUKT"); }
 }
 
@@ -99,6 +74,26 @@ async function startEAN() {
     document.getElementById("target-size-val").innerText = targetItem.rozmiar || "---";
     document.getElementById("scanner-instruction").style.display = "block";
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
+}
+
+function showQty() {
+    const m = document.getElementById("qty-modal");
+    document.getElementById("qty-name").innerText = targetItem.nazwa;
+    document.getElementById("qty-kat-val").innerText = "Nr Kat: " + targetItem.nr_kat;
+    document.getElementById("qty-remain").innerText = targetItem.pozostalo;
+    m.style.display = "flex";
+    const i = document.getElementById("qty-input"); i.value = "";
+    setTimeout(() => { i.focus(); i.click(); }, 150);
+}
+
+function sendVal(q) {
+    fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
+    .then(r => r.json()).then(res => {
+        if (res.status === "success") {
+            document.getElementById("qty-modal").style.display = "none";
+            fetchNext(currentOffset);
+        } else { showError(res.msg); }
+    });
 }
 
 function showError(m) {
