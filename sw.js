@@ -1,4 +1,4 @@
-const CACHE_NAME = 'b2b-terminal-v44.0';
+const CACHE_NAME = 'b2b-terminal-v44.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
