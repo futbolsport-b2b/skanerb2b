@@ -59,7 +59,7 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #qr-instruction { font-size: 24px; font-weight: 900; color: var(--success); margin-top: 15px; text-align: center; line-height: 1.4; }
 #qr-instruction.breathing { animation: text-breathe 2s infinite ease-in-out; }
 
-/* SEKCJA LOGO - Wymuszone proporcje 246x48 */
+/* SEKCJA LOGO */
 .logo-container { margin-top: auto; margin-bottom: 25px; width: 100%; display: flex; justify-content: center; align-items: center; min-height: 60px; }
 #company-logo { width: 80vw; max-width: 246px; height: auto; aspect-ratio: 246 / 48; object-fit: contain; opacity: 0.9; display: block; }
 
