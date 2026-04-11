@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v42.3</title>
-    <link rel="stylesheet" href="style.css?v=42.3">
+    <title>B2B TERMINAL v42.5</title>
+    <link rel="stylesheet" href="style.css?v=42.5">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
@@ -15,7 +15,7 @@
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.3</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.5</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
@@ -32,7 +32,7 @@
                     <div id="target-kat-display">
                         <span id="target-kat-val">---</span>
                         <span class="ean-meta-sep">|</span>
-                        <span class="ean-size-label">ROZ: <b id="target-size-val">---</b></span>
+                        <span class="ean-size-container"><b>ROZ:</b> <b id="target-size-val">---</b></span>
                     </div>
                 </div>
                 <div id="reader"></div>
@@ -50,32 +50,25 @@
                         <span class="task-lp-info">POZYCJA <b id="task-lp">--</b></span>
                         <button id="btn-next" class="btn-circle">▶</button>
                     </div>
-                    
                     <div class="task-content" id="product-data-area">
                         <div id="freeze-overlay"></div>
                         <h1 id="task-name">Ładowanie...</h1>
-                        
                         <div class="product-meta-row">
                             <span id="task-kat">---</span>
                             <span class="meta-separator">|</span>
                             <span class="size-label">ROZ: <b id="task-size">---</b></span>
                         </div>
-
                         <div class="task-qty-box">
                             <span class="qty-label">DO POBRANIA</span>
                             <div id="task-qty">0</div>
                         </div>
-
                         <div id="task-notes-row" style="display:none;">
                             UWAGI: <b id="task-notes">---</b>
                         </div>
                     </div>
-
                     <div id="task-action-container">
                         <button id="btn-scan-item" class="btn-primary">SKANUJ PRODUKT</button>
-                        <div id="loading-bar-wrapper">
-                            <div id="loading-bar-inner"></div>
-                        </div>
+                        <div id="loading-bar-wrapper"><div id="loading-bar-inner"></div></div>
                     </div>
                 </div>
             </section>
@@ -85,17 +78,24 @@
             <div class="sheet">
                 <div class="sheet-header">
                     <h2 id="qty-name">---</h2>
-                    <span id="qty-kat-val">Nr Kat: ---</span>
+                    <div class="sheet-meta">
+                        <span class="f4-kat-label">Nr Kat: <b id="qty-kat-val">---</b></span>
+                        <span class="f4-sep">|</span>
+                        <span class="f4-roz-label">ROZ: <b id="qty-roz-val">---</b></span>
+                    </div>
                 </div>
                 <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
                 <div class="input-group">
                     <input type="number" id="qty-input" inputmode="numeric" placeholder="0">
-                    <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
+                    <button id="btn-qty-ok" class="btn-success">
+                        <span id="btn-qty-text">ZATWIERDŹ</span>
+                        <div id="btn-qty-spinner" class="spinner"></div>
+                    </button>
                 </div>
                 <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
             </div>
         </div>
     </div>
-    <script src="app.js?v=42.3"></script>
+    <script src="app.js?v=42.5"></script>
 </body>
 </html>
