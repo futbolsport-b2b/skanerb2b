@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v41</title>
-    <link rel="stylesheet" href="style.css?v=41">
+    <title>B2B TERMINAL v42.0</title>
+    <link rel="stylesheet" href="style.css?v=42.0">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
@@ -15,7 +15,7 @@
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.41</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.0</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
@@ -32,7 +32,6 @@
                     <div id="target-kat-display">---</div>
                 </div>
                 <div id="reader"></div>
-                
                 <div id="scanner-visual">
                     <div class="corner tl"></div><div class="corner tr"></div>
                     <div class="corner bl"></div><div class="corner br"></div>
@@ -51,10 +50,20 @@
                     <div class="task-content" id="product-data-area">
                         <div id="freeze-overlay"></div>
                         <h1 id="task-name">Ładowanie...</h1>
-                        <div id="task-kat">---</div>
+                        
+                        <div class="product-meta-row">
+                            <span id="task-kat">---</span>
+                            <span class="meta-separator">|</span>
+                            <span class="size-label">ROZ: <b id="task-size">---</b></span>
+                        </div>
+
                         <div class="task-qty-box">
                             <span class="qty-label">DO POBRANIA</span>
                             <div id="task-qty">0</div>
+                        </div>
+
+                        <div id="task-notes-row" style="display:none;">
+                            UWAGI: <b id="task-notes">---</b>
                         </div>
                     </div>
 
@@ -83,6 +92,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=41"></script>
+    <script src="app.js?v=42.0"></script>
 </body>
 </html>
