@@ -1,4 +1,4 @@
-// v40 - Terminal Magazynowy - JS
+// v41 - Terminal Magazynowy - JS
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwL9WvrgYCGl4q_Drdh32kp_6kajwAHWNO8jiB57uq2hLUO-DU2UyNklQ6b0GgHofDELg/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
@@ -7,7 +7,6 @@ function setCornersColor(color) {
     document.querySelectorAll('.corner').forEach(el => el.style.borderColor = color);
 }
 
-// ZMIANA 3: Obsługa stanu ładowania (Mrożenie i Pasek)
 function setLoadingState(active) {
     const card = document.querySelector('.task-card');
     if (active) {
@@ -70,7 +69,7 @@ function onScan(text) {
 }
 
 async function fetchNext(offset) {
-    setLoadingState(true); // Aktywuj mrożenie i pasek
+    setLoadingState(true);
     currentOffset = offset;
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`).then(r => r.json());
@@ -78,14 +77,13 @@ async function fetchNext(offset) {
             targetItem = res.item;
             currentOffset = res.current_offset;
             
-            // Lekka zwłoka dla płynności przejścia animacji
             setTimeout(() => {
                 document.getElementById("task-lp").innerText = targetItem.lp;
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat;
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-panel").style.display = "block";
-                setLoadingState(false); // Przywróć UI i przycisk skanowania
+                setLoadingState(false);
             }, 350);
         } else {
             alert("ZREALIZOWANO");
