@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v42.4 BLUE-SKY</title>
-    <link rel="stylesheet" href="style.css?v=42.4">
+    <title>B2B TERMINAL v42.5 BLUE-SKY</title>
+    <link rel="stylesheet" href="style.css?v=42.5">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
@@ -15,7 +15,7 @@
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.4 (BLUE-SKY)</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.5 (BLUE-SKY)</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
@@ -78,7 +78,11 @@
             <div class="sheet">
                 <div class="sheet-header">
                     <h2 id="qty-name">---</h2>
-                    <span id="qty-kat-val">Nr Kat: ---</span>
+                    <div class="f4-meta-info">
+                        <span class="f4-kat-text">Nr Kat: <b id="qty-kat-val">---</b></span>
+                        <span class="f4-sep">|</span>
+                        <span class="f4-roz-text">ROZ: <b id="qty-roz-val">---</b></span>
+                    </div>
                 </div>
                 <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
                 <div class="input-group">
@@ -89,6 +93,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=42.4"></script>
+    <script src="app.js?v=42.5"></script>
 </body>
 </html>
