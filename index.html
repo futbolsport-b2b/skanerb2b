@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v43.5</title>
-    <link rel="stylesheet" href="style.css?v=43.5">
+    <title>B2B TERMINAL v43.6</title>
+    <link rel="stylesheet" href="style.css?v=43.6">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1c1c1e">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -12,9 +12,13 @@
 <body class="qr-mode">
     <div id="error-overlay"><div id="error-text">BŁĄD</div></div>
     
+    <div id="image-zoom-overlay">
+        <img id="zoomed-img" src="" alt="Powiększenie">
+    </div>
+    
     <div class="app-container">
         <header id="main-header">
-            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.5</div>
+            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.6</div>
             
             <div class="header-main-row">
                 <div id="order-val" class="breathing">ZESKANUJ KOD QR</div>
@@ -109,6 +113,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=43.5"></script>
+    <script src="app.js?v=43.6"></script>
 </body>
 </html>
