@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0cYPNDNlO2Y6oNh60yvKn8YZe0YESjfHLCyGp2eiphmUi5ufuBdLPefAtfX0hXnmu/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUNdBcFZvwpJgbtU69Rf5ZbhkVCXeukR_zr5V4inP7cT6S3gVhJ-PZ4X8tmsIoxgw/exec"; 
 const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big/"; 
 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
@@ -254,56 +254,82 @@ function onScan(text) {
     if (isProcessing) return; 
     const code = text.trim();
     
+    // ZMIANA: Obsługa skanu pierwszego kodu QR
     if (!currentOrderID) {
-        isProcessing = true; 
-        playSound('success');
-        triggerScanVisual('success');
-        currentOrderID = code; 
+        isProcessing = true; // Wstrzymuje kolejne odczyty w trakcie weryfikacji
         
-        html5QrCode.stop().then(() => { 
-            document.getElementById("scanner-box").style.display = "none"; 
-            document.getElementById("btn-torch").style.display = "none";
-            document.getElementById("btn-back-scan").style.display = "none";
-            document.getElementById("brand-title").style.display = "none"; 
-            
-            document.getElementById("startup-screen-elements").style.display = "none";
-            document.getElementById("header-main-row").style.display = "flex";
-            
-            const orderValElem = document.getElementById("order-val");
-            orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
-            orderValElem.classList.add("breathing"); 
-            orderValElem.style.textAlign = "center";
-            orderValElem.style.fontSize = "32px";
-            orderValElem.style.color = "#fff"; 
-            orderValElem.style.cursor = "pointer";
-            orderValElem.style.padding = "20px";
-            orderValElem.style.background = "var(--success)";
-            orderValElem.style.borderRadius = "16px";
-            orderValElem.style.marginTop = "15vh";
-            orderValElem.style.width = "100%";
-            
-            orderValElem.onclick = () => {
-                goFullscreen();
-                unlockAudioAPI();
+        // Zmieniamy informację graficzną na czas sprawdzania
+        document.getElementById("qr-instruction").innerText = "WERYFIKACJA...";
+        
+        fetchWithRetry(`${SCRIPT_URL}?orderID=${encodeURIComponent(code)}&action=check_order`)
+        .then(res => {
+            if (res.status === "success") {
+                // Jeśli kod zamówienia jest prawidłowy
+                playSound('success');
+                triggerScanVisual('success');
+                currentOrderID = code; 
 
-                orderValElem.classList.remove("breathing");
-                orderValElem.innerHTML = code;
-                orderValElem.style.textAlign = "left";
-                orderValElem.style.fontSize = "26px";
-                orderValElem.style.background = "transparent";
-                orderValElem.style.padding = "0";
-                orderValElem.style.marginTop = "0";
-                orderValElem.onclick = null;
-                orderValElem.style.cursor = "default";
+                html5QrCode.stop().then(() => { 
+                    document.getElementById("scanner-box").style.display = "none"; 
+                    document.getElementById("btn-torch").style.display = "none";
+                    document.getElementById("btn-back-scan").style.display = "none";
+                    document.getElementById("brand-title").style.display = "none"; 
+                    
+                    document.getElementById("startup-screen-elements").style.display = "none";
+                    document.getElementById("header-main-row").style.display = "flex";
+                    document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR"; // Reset stanu
+                    
+                    const orderValElem = document.getElementById("order-val");
+                    orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
+                    orderValElem.classList.add("breathing"); 
+                    orderValElem.style.textAlign = "center";
+                    orderValElem.style.fontSize = "32px";
+                    orderValElem.style.color = "#fff"; 
+                    orderValElem.style.cursor = "pointer";
+                    orderValElem.style.padding = "20px";
+                    orderValElem.style.background = "var(--success)";
+                    orderValElem.style.borderRadius = "16px";
+                    orderValElem.style.marginTop = "15vh";
+                    orderValElem.style.width = "100%";
+                    
+                    // Odczytanie komunikatu zaraz po ukryciu skanera
+                    speakVoice(`Ilość pozycji zamówienia ${res.items_count} sztuk. Kliknij aby rozpocząć.`);
+                    
+                    orderValElem.onclick = () => {
+                        goFullscreen();
+                        unlockAudioAPI();
 
-                document.getElementById("global-progress-bar").style.display = "block"; 
-                document.getElementById("btn-finish-icon").style.display = "flex"; 
-                
-                fetchNext(0); 
-            };
+                        orderValElem.classList.remove("breathing");
+                        orderValElem.innerHTML = code;
+                        orderValElem.style.textAlign = "left";
+                        orderValElem.style.fontSize = "26px";
+                        orderValElem.style.background = "transparent";
+                        orderValElem.style.padding = "0";
+                        orderValElem.style.marginTop = "0";
+                        orderValElem.onclick = null;
+                        orderValElem.style.cursor = "default";
+
+                        document.getElementById("global-progress-bar").style.display = "block"; 
+                        document.getElementById("btn-finish-icon").style.display = "flex"; 
+                        
+                        fetchNext(0); 
+                    };
+                });
+            } else {
+                // Gdy zamówienia nie ma w bazie lub wywaliło błąd statusu
+                triggerScanVisual('error');
+                showError(res.msg); // showError odtworzy dźwięk i przemówi
+                document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR";
+            }
+        })
+        .catch(() => {
+            triggerScanVisual('error');
+            showError("Błąd sieci. Spróbuj ponownie.");
+            document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR";
         });
         
     } else if (code === targetItem.ean) {
+        // Logika skanowania EAN na danym produkcie
         isProcessing = true;
         playSound('success');
         triggerScanVisual('success');
@@ -472,10 +498,15 @@ function showError(m) {
     isProcessing = true; 
     playSound('error'); 
     
+    // ZMIANA: Obsługa nowych fraz wczytywanych na głos
     if(m && m.toUpperCase().includes("ILOŚĆ")) {
         speakVoice("Niewłaściwa ilość");
-    } else if (m && m.toUpperCase().includes("POŁĄCZENIE") || m.toUpperCase().includes("ZAPISU")) {
+    } else if (m && (m.toUpperCase().includes("POŁĄCZENIE") || m.toUpperCase().includes("ZAPISU") || m.toUpperCase().includes("SIECI"))) {
         speakVoice("Błąd sieci");
+    } else if (m && m.toUpperCase().includes("NIE ZNALEZIONO")) {
+        speakVoice("Nie znaleziono zamówienia");
+    } else if (m && m.toUpperCase().includes("ZREALIZOWANE")) {
+        speakVoice("Zamówienie zrealizowane");
     } else {
         speakVoice("Zły produkt");
     }
