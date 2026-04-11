@@ -1,5 +1,5 @@
 // v42.5 - Terminal Magazynowy - JS
-const SCRIPT_URL = "TWÓJ_URL_APPS_SCRIPT_TUTAJ"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1cPA_TnZwdR024aF3Uj450cx-JP9N9M_EvddHEHE0SNx-lfXZfCcTi_e16GKD3T2J/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
