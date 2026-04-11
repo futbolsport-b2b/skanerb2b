@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v42.5</title>
-    <link rel="stylesheet" href="style.css?v=42.5">
+    <title>B2B TERMINAL ver.50</title>
+    <link rel="stylesheet" href="style.css?v=50">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
@@ -15,7 +15,7 @@
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.5</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.50</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
@@ -78,7 +78,7 @@
             <div class="sheet">
                 <div class="sheet-header">
                     <h2 id="qty-name">---</h2>
-                    <div class="f4-meta-row">
+                    <div class="f4-info-row">
                         <span class="f4-label">Nr Kat: <b id="qty-kat-val">---</b></span>
                         <span class="f4-sep">|</span>
                         <span class="f4-label">ROZ: <b id="qty-roz-val">---</b></span>
@@ -88,14 +88,14 @@
                 <div class="input-group">
                     <input type="number" id="qty-input" inputmode="numeric" placeholder="0">
                     <button id="btn-qty-ok" class="btn-success">
-                        <span id="btn-ok-text">ZATWIERDŹ</span>
-                        <div id="btn-ok-spinner" class="btn-spinner"></div>
+                        <span id="btn-text-content">ZATWIERDŹ</span>
+                        <div class="btn-loader" id="btn-loader"></div>
                     </button>
                 </div>
                 <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
             </div>
         </div>
     </div>
-    <script src="app.js?v=42.5"></script>
+    <script src="app.js?v=50"></script>
 </body>
 </html>
