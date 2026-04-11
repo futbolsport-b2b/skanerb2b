@@ -266,10 +266,7 @@ function onScan(text) {
             document.getElementById("btn-back-scan").style.display = "none";
             document.getElementById("brand-title").style.display = "none"; 
             
-            // UKRYWAMY ZDJĘCIE LOGO I INSTRUKCJĘ PO ZESKANOWANIU
             document.getElementById("startup-screen-elements").style.display = "none";
-            
-            // Pokazujemy nagłówek z order-val
             document.getElementById("header-main-row").style.display = "flex";
             
             const orderValElem = document.getElementById("order-val");
@@ -333,7 +330,6 @@ async function startQR() {
     isProcessing = false; 
     document.body.className = "qr-mode"; 
     
-    // Inicjalizacja widoków przy starcie systemu
     document.getElementById("header-main-row").style.display = "none";
     document.getElementById("startup-screen-elements").style.display = "flex";
     
@@ -363,7 +359,6 @@ async function startEAN() {
     document.getElementById("target-size-val").innerText = targetItem.rozmiar || "---"; 
     document.getElementById("scanner-instruction").style.display = "block";
     
-    // Pokazanie latarki i przycisku powrotu podczas skanowania EAN
     document.getElementById("btn-torch").style.display = "flex"; 
     document.getElementById("btn-back-scan").style.display = "flex"; 
     document.getElementById("btn-torch").classList.remove('active');
