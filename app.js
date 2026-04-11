@@ -1,5 +1,5 @@
 // v42.0 - Terminal Magazynowy - JS
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzCHt5VpbJ5HDfQq-0tU3-y8iKn62dv6YciFR1sa1phCzD8leyu8DGhzRMpMSVms8k/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzW56hfgcRINuVgBqMfUOeBH10imr8FWUrL2UPsvSNFkoxjCevkHOUgiL5yxms9LxSO/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
@@ -25,16 +25,15 @@ async function fetchNext(offset) {
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
 
                 const notesRow = document.getElementById("task-notes-row");
-                const notesEl = document.getElementById("task-notes");
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") {
-                    notesEl.innerText = targetItem.uwagi;
+                    document.getElementById("task-notes").innerText = targetItem.uwagi;
                     notesRow.style.display = "block";
                 } else { notesRow.style.display = "none"; }
 
                 document.getElementById("task-panel").style.display = "block";
                 setLoadingState(false);
             }, 350);
-        } else { alert("ZREALIZOWANO"); location.reload(); }
+        } else { alert("ZAMÓWIENIE ZREALIZOWANE"); location.reload(); }
     } catch (e) { setLoadingState(false); }
 }
 
@@ -105,15 +104,10 @@ function showError(m) {
 }
 
 document.getElementById("btn-qty-ok").onclick = () => sendVal(document.getElementById("qty-input").value);
-document.getElementById("btn-scan-item").onclick = () => { 
-    document.getElementById("task-panel").style.display = "none"; 
-    document.getElementById("scanner-box").style.display = "block"; startEAN(); 
-};
+document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-panel").style.display = "none"; document.getElementById("scanner-box").style.display = "block"; startEAN(); };
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
-document.getElementById("btn-qty-cancel").onclick = () => { 
-    document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); 
-};
+document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
 startQR();
