@@ -3,10 +3,9 @@ const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big
 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 let currentInputValue = "0"; 
-let zoomTimeout = null; // Zmienna dla automatycznego ukrywania zooma
+let zoomTimeout = null; 
 const html5QrCode = new Html5Qrcode("reader");
 
-// Funkcja wywołująca tryb pełnoekranowy (Fullscreen)
 function goFullscreen() {
     if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) {
@@ -103,24 +102,22 @@ document.getElementById('btn-torch').onclick = async () => {
     }
 };
 
-// Obsługa kliknięcia i zooma na zdjęciu (v43.6)
 document.getElementById('task-img').onclick = function() {
     const overlay = document.getElementById('image-zoom-overlay');
     document.getElementById('zoomed-img').src = this.src;
     overlay.style.display = 'flex';
-    void overlay.offsetWidth; // Wymuszenie reflow przeglądarki dla płynnej animacji
+    void overlay.offsetWidth; 
     overlay.classList.add('show');
     
     clearTimeout(zoomTimeout);
-    zoomTimeout = setTimeout(closeZoom, 3000); // Automatyczne zamknięcie po 3s
+    zoomTimeout = setTimeout(closeZoom, 3000); 
 };
 
 function closeZoom() {
     const overlay = document.getElementById('image-zoom-overlay');
     overlay.classList.remove('show');
-    setTimeout(() => overlay.style.display = 'none', 300); // Czas musi odpowiadać animacji CSS
+    setTimeout(() => overlay.style.display = 'none', 300); 
 }
-// Możliwość zamknięcia zooma na żądanie
 document.getElementById('image-zoom-overlay').onclick = closeZoom;
 
 async function fetchNext(offset) {
@@ -155,7 +152,8 @@ async function fetchNext(offset) {
                 imgElem.src = "";
                 
                 if(targetItem.nr_kat && targetItem.nr_kat !== "---") {
-                    let formattedKat = String(targetItem.nr_kat).trim().replace(/[\s\-]+/g, '_');
+                    // FIX 43.7: RegEx /\s+/g zamienia TYLKO spacje na "_" (myślniki zostają)
+                    let formattedKat = String(targetItem.nr_kat).trim().replace(/\s+/g, '_');
                     let finalImageUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
                     
                     imgElem.onload = () => { imgBox.style.display = "flex"; };
@@ -195,7 +193,6 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // Aktywacja trybu Fullscreen po pomyślnym zeskanowaniu zamówienia
         goFullscreen();
 
         document.getElementById("brand-title").style.display = "none"; 
@@ -283,10 +280,9 @@ function updateDisplay(val) {
     document.getElementById("qty-input-display").innerText = currentInputValue;
 }
 
-// Błąd przekroczenia ilości (Klawiatura numeryczna)
 function flashDisplayError() {
     playSound('error');
-    speakVoice("Niewłaściwa ilość"); // Precyzyjny komunikat zamiast 'Zły produkt'
+    speakVoice("Niewłaściwa ilość"); 
     const disp = document.getElementById("qty-input-display");
     disp.classList.add("flash-error");
     setTimeout(() => disp.classList.remove("flash-error"), 300);
@@ -311,7 +307,6 @@ document.getElementById('np-del').onclick = () => {
 
 document.getElementById('np-clear').onclick = () => updateDisplay("0");
 
-// Błąd przekroczenia ilości (Szybkie dodawanie +)
 document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
     btn.onclick = () => {
         let addVal = parseInt(btn.getAttribute('data-add'));
@@ -319,7 +314,7 @@ document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
         
         if (newVal > targetItem.pozostalo) {
             playSound('error'); 
-            speakVoice("Niewłaściwa ilość"); // Precyzyjny komunikat
+            speakVoice("Niewłaściwa ilość"); 
             btn.classList.add('flash-error'); 
             setTimeout(() => { btn.classList.remove('flash-error'); }, 300); 
         } else {
@@ -367,17 +362,15 @@ function sendVal(q) {
         } else { 
             btnOk.classList.remove("is-loading");
             btnOk.disabled = false;
-            showError(res.msg); // showError rozpozna czy to błąd EAN czy Ilości
+            showError(res.msg); 
         } 
     });
 }
 
-// Globalna obsługa błędów z backendu / innych źródeł
 function showError(m) { 
     isProcessing = true; 
     playSound('error'); 
     
-    // Logika rozpoznawania błędu na podstawie wiadomości z backendu
     if(m && m.toUpperCase().includes("ILOŚĆ")) {
         speakVoice("Niewłaściwa ilość");
     } else {
@@ -406,7 +399,6 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// Podpięcie Fullscreen pod dowolne kliknięcie (jeśli samo zeskanowanie QR nie przejdzie przez blokady przeglądarki)
 document.body.addEventListener('click', () => {
     goFullscreen();
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
