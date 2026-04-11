@@ -1,12 +1,42 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbztwhvZkWkLVSt4yfpalrAT7JYTqnSimlE3tRUH3GH3E7i3qIRUyX64T2gCMi1JWDSV/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxewEflB3UMjmTLyfzdPFMFcriXzBqH4ty0T_7Zw-RbLRysXAVyGpx5QUxi2-vH5fo/exec"; 
 const IMAGE_BASE_URL = "https://b2b.futbolsport.pl/gfx-base/s_1/gfx/products/big/"; 
 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 let currentInputValue = "0"; 
 let zoomTimeout = null; 
 const html5QrCode = new Html5Qrcode("reader");
+let audioCtx = null;
+let wakeLock = null;
 
-// Funkcja wywołująca tryb pełnoekranowy (Fullscreen)
+// Rejestracja Service Workera dla wsparcia Offline
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error("SW Reg Error:", err));
+}
+
+// Solidny Unlocker dla iOS i restrykcyjnych przeglądarek
+function unlockAudioAPI() {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    // Odtworzenie pustego dźwięku - omija restrykcje Apple
+    const buffer = audioCtx.createBuffer(1, 1, 22050);
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
+
+    if ('speechSynthesis' in window) {
+        let u = new SpeechSynthesisUtterance('');
+        u.volume = 0;
+        window.speechSynthesis.speak(u);
+    }
+}
+document.body.addEventListener('click', unlockAudioAPI, { once: true });
+document.body.addEventListener('touchstart', unlockAudioAPI, { once: true });
+
 function goFullscreen() {
     if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) {
@@ -17,7 +47,6 @@ function goFullscreen() {
     }
 }
 
-let wakeLock = null;
 async function requestWakeLock() {
     try {
         if ('wakeLock' in navigator) {
@@ -41,10 +70,8 @@ function speakVoice(text) {
     }
 }
 
-let audioCtx = null;
 function playSound(type) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (!audioCtx) unlockAudioAPI();
     
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
@@ -91,6 +118,29 @@ function setLoadingState(active) {
     } 
 }
 
+// ROZWIĄZANIE: Wrapper Fetch z automatycznym wznawianiem przy gubieniu pakietów
+async function fetchWithRetry(url, retries = 3, backoff = 500) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network error');
+            return await response.json();
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            await new Promise(res => setTimeout(res, backoff * Math.pow(2, i))); // Exponential backoff
+        }
+    }
+}
+
+// Prefetching zdjęć (ładowanie do cache przeglądarki w tle)
+function prefetchImage(nr_kat) {
+    if (!nr_kat || nr_kat === "---") return;
+    const formattedKat = String(nr_kat).trim().replace(/\s+/g, '_');
+    const imgUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
+    const img = new Image();
+    img.src = imgUrl;
+}
+
 let torchOn = false;
 document.getElementById('btn-torch').onclick = async () => {
     torchOn = !torchOn;
@@ -99,35 +149,33 @@ document.getElementById('btn-torch').onclick = async () => {
         document.getElementById('btn-torch').classList.toggle('active', torchOn);
     } catch(e) {
         torchOn = false;
-        alert("Latarka nie jest obsługiwana w tym trybie kamery.");
+        alert("Latarka nie jest obsługiwana w tym urządzeniu.");
     }
 };
 
-// Obsługa kliknięcia i zooma na zdjęciu
 document.getElementById('task-img').onclick = function() {
     const overlay = document.getElementById('image-zoom-overlay');
     document.getElementById('zoomed-img').src = this.src;
     overlay.style.display = 'flex';
-    void overlay.offsetWidth; // Wymuszenie reflow przeglądarki dla płynnej animacji
+    void overlay.offsetWidth; 
     overlay.classList.add('show');
-    
     clearTimeout(zoomTimeout);
-    zoomTimeout = setTimeout(closeZoom, 3000); // Automatyczne zamknięcie po 3s
+    zoomTimeout = setTimeout(closeZoom, 3000);
 };
 
 function closeZoom() {
     const overlay = document.getElementById('image-zoom-overlay');
     overlay.classList.remove('show');
-    setTimeout(() => overlay.style.display = 'none', 300); // Czas musi odpowiadać animacji CSS
+    setTimeout(() => overlay.style.display = 'none', 300);
 }
-// Możliwość zamknięcia zooma na żądanie
 document.getElementById('image-zoom-overlay').onclick = closeZoom;
 
 async function fetchNext(offset) {
     setLoadingState(true); 
     currentOffset = offset;
     try {
-        const res = await fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`).then(r => r.json());
+        // Używamy zoptymalizowanego mechanizmu z Retry
+        const res = await fetchWithRetry(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`);
         
         if(res.progress !== undefined) {
             document.getElementById("global-progress-fill").style.width = res.progress + "%";
@@ -136,6 +184,10 @@ async function fetchNext(offset) {
         if (res.status === "next_item") {
             targetItem = res.item; 
             currentOffset = res.current_offset;
+            
+            // Prefetch kolejnego zdjęcia dla płynności
+            if(res.prefetch_kat) prefetchImage(res.prefetch_kat);
+
             setTimeout(() => {
                 const m = document.getElementById("qty-modal");
                 if (m.style.display === "flex") {
@@ -149,7 +201,6 @@ async function fetchNext(offset) {
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
                 
-                // === Wdrożenie warunku na kolor dla DO POBRANIA ===
                 const qtyElem = document.getElementById("task-qty");
                 qtyElem.innerText = targetItem.pozostalo;
                 const notesRow = document.getElementById("task-notes-row");
@@ -157,24 +208,21 @@ async function fetchNext(offset) {
                 if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
                     document.getElementById("task-notes").innerText = targetItem.uwagi; 
                     notesRow.style.display = "block"; 
-                    qtyElem.style.color = "var(--error)"; // Czerwony jeśli są uwagi (fix v43.8)
+                    qtyElem.style.color = "var(--error)"; 
                 } else { 
                     notesRow.style.display = "none"; 
-                    qtyElem.style.color = "var(--success)"; // Standardowy zielony
+                    qtyElem.style.color = "var(--success)";
                 }
                 
-                // Generowanie zdjęcia
                 const imgBox = document.getElementById("product-image-box");
                 const imgElem = document.getElementById("task-img");
                 imgElem.src = "";
                 
                 if(targetItem.nr_kat && targetItem.nr_kat !== "---") {
                     let formattedKat = String(targetItem.nr_kat).trim().replace(/\s+/g, '_');
-                    let finalImageUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
-                    
                     imgElem.onload = () => { imgBox.style.display = "flex"; };
                     imgElem.onerror = () => { imgBox.style.display = "none"; }; 
-                    imgElem.src = finalImageUrl;
+                    imgElem.src = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
                 } else {
                     imgBox.style.display = "none";
                 }
@@ -188,29 +236,29 @@ async function fetchNext(offset) {
             alert("ZAMÓWIENIE ZREALIZOWANE"); 
             location.reload(); 
         }
-    } catch (e) { 
+    } catch (e) {
+        // Fallback w przypadku ostatecznej awarii sieci pomimo ponowień
         setLoadingState(false); 
+        showError("Brak połączenia! Spróbuj ponownie.");
     }
 }
 
 function onScan(text) {
     if (isProcessing) return; 
     const code = text.trim();
+    
     if (!currentOrderID) {
         isProcessing = true; 
         playSound('success');
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // FIX FULLSCREEN: Przebudowa interfejsu w guzik inicjujący (tryb START v43.8)
         html5QrCode.stop().then(() => { 
             document.getElementById("scanner-box").style.display = "none"; 
             document.getElementById("btn-torch").style.display = "none";
             document.getElementById("brand-title").style.display = "none"; 
             
             const orderValElem = document.getElementById("order-val");
-            
-            // Zamiana tekstu w przycisk wymuszający kliknięcie użytkownika
             orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
             orderValElem.classList.add("breathing"); 
             orderValElem.style.textAlign = "center";
@@ -222,16 +270,10 @@ function onScan(text) {
             orderValElem.style.borderRadius = "16px";
             orderValElem.style.marginTop = "15vh";
             
-            // Reakcja na kliknięcie gwarantująca prawidłowe wymuszenie Fullscreen API (v43.8 fix)
             orderValElem.onclick = () => {
                 goFullscreen();
-                
-                // Inicjalizacja Audio za zgodą przeglądarki
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                unlockAudioAPI();
 
-                // Reset stylu nagłówka
                 orderValElem.classList.remove("breathing");
                 orderValElem.innerHTML = code;
                 orderValElem.style.textAlign = "left";
@@ -383,8 +425,9 @@ function sendVal(q) {
     btnOk.classList.add("is-loading");
     btnOk.disabled = true;
 
-    fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
-    .then(r => r.json()).then(res => { 
+    // Autowznawianie żądania validate
+    fetchWithRetry(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
+    .then(res => { 
         if (res.status === "success") { 
             let qInt = parseInt(q);
             if (qInt >= targetItem.pozostalo) {
@@ -398,6 +441,11 @@ function sendVal(q) {
             btnOk.disabled = false;
             showError(res.msg); 
         } 
+    })
+    .catch(() => {
+        btnOk.classList.remove("is-loading");
+        btnOk.disabled = false;
+        showError("Błąd zapisu! Sprawdź połączenie Wi-Fi.");
     });
 }
 
@@ -407,6 +455,8 @@ function showError(m) {
     
     if(m && m.toUpperCase().includes("ILOŚĆ")) {
         speakVoice("Niewłaściwa ilość");
+    } else if (m && m.toUpperCase().includes("POŁĄCZENIE") || m.toUpperCase().includes("ZAPISU")) {
+        speakVoice("Błąd sieci");
     } else {
         speakVoice("Zły produkt");
     }
@@ -414,7 +464,7 @@ function showError(m) {
     const o = document.getElementById("error-overlay"); 
     document.getElementById("error-text").innerText = m; 
     o.style.display = "flex"; 
-    setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
+    setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 2000); 
 }
 
 let touchStartX = 0;
@@ -432,13 +482,5 @@ document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1)
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
-
-// Podpięcie Fullscreen pod dowolne kliknięcie (v43.6 fix, v43.8 fix)
-// Ta funkcja jest teraz wywoływana w trybie START, ale zostawiam jako fallback.
-document.body.addEventListener('click', () => {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-}, { once: true });
 
 startQR();
