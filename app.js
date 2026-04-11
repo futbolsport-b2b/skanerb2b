@@ -99,8 +99,13 @@ function playSound(type) {
 function triggerScanVisual(type) {
     const sv = document.getElementById("scanner-visual");
     if(sv) {
-        sv.className = type === 'success' ? 'scan-success' : 'scan-error';
-        setTimeout(() => { sv.className = ''; }, 400); 
+        // Używamy classList i wydłużonego czasu (800ms) aby kolor był wyraźnie widoczny
+        sv.classList.remove('scan-success', 'scan-error');
+        void sv.offsetWidth; // Wymuszenie odświeżenia przeglądarki
+        sv.classList.add(type === 'success' ? 'scan-success' : 'scan-error');
+        setTimeout(() => { 
+            sv.classList.remove('scan-success', 'scan-error'); 
+        }, 800); 
     }
 }
 
@@ -254,7 +259,7 @@ function onScan(text) {
     if (isProcessing) return; 
     const code = text.trim();
     
-    // START - Logika pierwszego kodu QR
+    // LOGIKA STARTOWA KODU QR
     if (!currentOrderID) {
         isProcessing = true; 
         document.getElementById("qr-instruction").innerText = "WERYFIKACJA...";
@@ -263,59 +268,64 @@ function onScan(text) {
         .then(res => {
             if (res.status === "success") {
                 playSound('success');
-                triggerScanVisual('success');
+                triggerScanVisual('success'); // Zmienia kolor ramki na ZIELONY
                 currentOrderID = code; 
 
-                html5QrCode.stop().then(() => { 
-                    document.getElementById("scanner-box").style.display = "none"; 
-                    document.getElementById("btn-torch").style.display = "none";
-                    document.getElementById("btn-back-scan").style.display = "none";
-                    document.getElementById("brand-title").style.display = "none"; 
-                    
-                    document.getElementById("startup-screen-elements").style.display = "none";
-                    document.getElementById("header-main-row").style.display = "flex";
-                    document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR"; 
-                    
-                    const orderValElem = document.getElementById("order-val");
-                    orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
-                    orderValElem.classList.add("breathing"); 
-                    orderValElem.style.textAlign = "center";
-                    orderValElem.style.fontSize = "32px";
-                    orderValElem.style.color = "#fff"; 
-                    orderValElem.style.cursor = "pointer";
-                    orderValElem.style.padding = "20px";
-                    orderValElem.style.background = "var(--success)";
-                    orderValElem.style.borderRadius = "16px";
-                    orderValElem.style.marginTop = "15vh";
-                    orderValElem.style.width = "100%";
-                    
-                    // Odczytanie TTS dla poprawnego zamówienia
-                    speakVoice(`Ilość pozycji zamówienia ${res.items_count}. Dotknij aby rozpocząć.`);
-                    
-                    orderValElem.onclick = () => {
-                        goFullscreen();
-                        unlockAudioAPI();
-
-                        orderValElem.classList.remove("breathing");
-                        orderValElem.innerHTML = code;
-                        orderValElem.style.textAlign = "left";
-                        orderValElem.style.fontSize = "26px";
-                        orderValElem.style.background = "transparent";
-                        orderValElem.style.padding = "0";
-                        orderValElem.style.marginTop = "0";
-                        orderValElem.onclick = null;
-                        orderValElem.style.cursor = "default";
-
-                        document.getElementById("global-progress-bar").style.display = "block"; 
-                        document.getElementById("btn-finish-icon").style.display = "flex"; 
+                // ZMIANA: Czekamy 600ms, aby pracownik wyraźnie zobaczył ZIELONĄ RAMKĘ, zanim zamkniemy aparat
+                setTimeout(() => {
+                    html5QrCode.stop().then(() => { 
+                        document.getElementById("scanner-box").style.display = "none"; 
+                        document.getElementById("btn-torch").style.display = "none";
+                        document.getElementById("btn-back-scan").style.display = "none";
+                        document.getElementById("brand-title").style.display = "none"; 
                         
-                        fetchNext(0); 
-                    };
-                });
+                        document.getElementById("startup-screen-elements").style.display = "none";
+                        document.getElementById("header-main-row").style.display = "flex";
+                        document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR"; 
+                        
+                        const orderValElem = document.getElementById("order-val");
+                        orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
+                        orderValElem.classList.add("breathing"); 
+                        orderValElem.style.textAlign = "center";
+                        orderValElem.style.fontSize = "32px";
+                        orderValElem.style.color = "#fff"; 
+                        orderValElem.style.cursor = "pointer";
+                        orderValElem.style.padding = "20px";
+                        orderValElem.style.background = "var(--success)";
+                        orderValElem.style.borderRadius = "16px";
+                        orderValElem.style.marginTop = "15vh";
+                        orderValElem.style.width = "100%";
+                        
+                        // ZMIANA: Syntezator przemówi DOPIERO w momencie, gdy użytkownik dotknie przycisku
+                        orderValElem.onclick = () => {
+                            goFullscreen();
+                            unlockAudioAPI();
+
+                            // Mowa odczytywana po bezpiecznym kliknięciu
+                            speakVoice(`Ilość pozycji zamówienia ${res.items_count}`);
+
+                            orderValElem.classList.remove("breathing");
+                            orderValElem.innerHTML = code;
+                            orderValElem.style.textAlign = "left";
+                            orderValElem.style.fontSize = "26px";
+                            orderValElem.style.background = "transparent";
+                            orderValElem.style.padding = "0";
+                            orderValElem.style.marginTop = "0";
+                            orderValElem.onclick = null;
+                            orderValElem.style.cursor = "default";
+
+                            document.getElementById("global-progress-bar").style.display = "block"; 
+                            document.getElementById("btn-finish-icon").style.display = "flex"; 
+                            
+                            fetchNext(0); 
+                        };
+                    });
+                }, 600); // Koniec opóźnienia wizualnego
+
             } else {
-                // Gdy zamówienia nie ma - pika i mruga na czerwono
+                // Gdy zamówienia nie odnaleziono (mruga na czerwono i wymawia błąd)
                 triggerScanVisual('error');
-                showError("NIE ZNALEZIONO ZAMÓWIENIA"); 
+                showError("NIE ZNALEZIONO ZAMÓWIENIA", true); // "true" wycisza pikanie
                 document.getElementById("qr-instruction").innerText = "ZESKANUJ KOD QR";
             }
         })
@@ -326,9 +336,12 @@ function onScan(text) {
         });
         
     } else if (code === targetItem.ean) {
+        // SKANOWANIE EAN PRODUKTU
         isProcessing = true;
         playSound('success');
-        triggerScanVisual('success');
+        triggerScanVisual('success'); // Zmienia na zielony
+        
+        // ZMIANA: Też wydłużamy o ułamek sekundy, by pracownik widział, że "weszło na zielono"
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
@@ -341,7 +354,7 @@ function onScan(text) {
                     sendVal(1); 
                 }
             }); 
-        }, 300); 
+        }, 600); 
     } else { 
         triggerScanVisual('error');
         showError("BŁĘDNY PRODUKT"); 
@@ -352,25 +365,14 @@ async function startQR() {
     isProcessing = false; 
     document.body.className = "qr-mode"; 
     
-    document.getElementById("header-main-row").style.display = "none";
-    document.getElementById("startup-screen-elements").style.display = "flex";
-    
     document.getElementById("scanner-instruction").style.display = "none"; 
     document.getElementById("btn-torch").style.display = "none"; 
     document.getElementById("btn-back-scan").style.display = "none"; 
-    
-    const qrInst = document.getElementById("qr-instruction");
-    qrInst.innerText = "ZESKANUJ KOD QR";
-    qrInst.style.cursor = "default";
-    qrInst.onclick = null;
     
     try {
         await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
     } catch (err) {
         console.warn("Wymagana zgoda na kamerę:", err);
-        qrInst.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
-        qrInst.style.cursor = "pointer";
-        qrInst.onclick = () => startQR(); 
     }
 }
 
@@ -490,16 +492,19 @@ function sendVal(q) {
     });
 }
 
-function showError(m) { 
+function showError(m, muteBeep = false) { 
     isProcessing = true; 
-    playSound('error'); 
+    
+    if(!muteBeep) {
+        playSound('error'); 
+    }
     
     if(m && m.toUpperCase().includes("ILOŚĆ")) {
         speakVoice("Niewłaściwa ilość");
     } else if (m && (m.toUpperCase().includes("POŁĄCZENIE") || m.toUpperCase().includes("ZAPISU") || m.toUpperCase().includes("SIECI"))) {
         speakVoice("Błąd sieci");
     } else if (m && m.toUpperCase().includes("NIE ZNALEZIONO")) {
-        // Blokada TTS dla błędu QR - celowe wyciszenie zgodnie z życzeniem
+        speakVoice("NIE ZNALEZIONO ZAMÓWIENIA"); 
     } else if (m && m.toUpperCase().includes("ZREALIZOWANE")) {
         speakVoice("Zamówienie zrealizowane");
     } else {
@@ -532,5 +537,5 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// POWRÓT DO PIERWOTNEGO AUTOSTARTU
+// POWRÓT DO AUTOSTARTU
 startQR();
