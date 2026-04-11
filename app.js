@@ -148,7 +148,6 @@ document.getElementById('btn-torch').onclick = async () => {
     }
 };
 
-// NOWOŚĆ: Logika anulowania skanowania i powrotu do karty produktu
 document.getElementById('btn-back-scan').onclick = () => {
     isProcessing = true;
     html5QrCode.stop().then(() => {
@@ -158,7 +157,6 @@ document.getElementById('btn-back-scan').onclick = () => {
         document.getElementById("btn-back-scan").style.display = "none";
         document.getElementById("task-panel").style.display = "block";
     }).catch(() => {
-        // Fallback w razie błędu biblioteki
         isProcessing = false;
         document.getElementById("scanner-box").style.display = "none";
         document.getElementById("task-panel").style.display = "block";
@@ -265,8 +263,14 @@ function onScan(text) {
         html5QrCode.stop().then(() => { 
             document.getElementById("scanner-box").style.display = "none"; 
             document.getElementById("btn-torch").style.display = "none";
-            document.getElementById("btn-back-scan").style.display = "none"; // ukrycie powrotu
+            document.getElementById("btn-back-scan").style.display = "none";
             document.getElementById("brand-title").style.display = "none"; 
+            
+            // UKRYWAMY ZDJĘCIE LOGO I INSTRUKCJĘ PO ZESKANOWANIU
+            document.getElementById("startup-screen-elements").style.display = "none";
+            
+            // Pokazujemy nagłówek z order-val
+            document.getElementById("header-main-row").style.display = "flex";
             
             const orderValElem = document.getElementById("order-val");
             orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
@@ -279,6 +283,7 @@ function onScan(text) {
             orderValElem.style.background = "var(--success)";
             orderValElem.style.borderRadius = "16px";
             orderValElem.style.marginTop = "15vh";
+            orderValElem.style.width = "100%";
             
             orderValElem.onclick = () => {
                 goFullscreen();
@@ -309,7 +314,7 @@ function onScan(text) {
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
                 document.getElementById("btn-torch").style.display = "none";
-                document.getElementById("btn-back-scan").style.display = "none"; // ukrycie powrotu
+                document.getElementById("btn-back-scan").style.display = "none";
                 
                 if (targetItem.pozostalo > 1) {
                     showQty(); 
@@ -327,22 +332,27 @@ function onScan(text) {
 async function startQR() { 
     isProcessing = false; 
     document.body.className = "qr-mode"; 
+    
+    // Inicjalizacja widoków przy starcie systemu
+    document.getElementById("header-main-row").style.display = "none";
+    document.getElementById("startup-screen-elements").style.display = "flex";
+    
     document.getElementById("scanner-instruction").style.display = "none"; 
     document.getElementById("btn-torch").style.display = "none"; 
     document.getElementById("btn-back-scan").style.display = "none"; 
     
+    const qrInst = document.getElementById("qr-instruction");
+    qrInst.innerText = "ZESKANUJ KOD QR";
+    qrInst.style.cursor = "default";
+    qrInst.onclick = null;
+    
     try {
         await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
-        const orderValElem = document.getElementById("order-val");
-        orderValElem.innerText = "ZESKANUJ KOD QR";
-        orderValElem.style.cursor = "default";
-        orderValElem.onclick = null;
     } catch (err) {
         console.warn("Wymagana zgoda na kamerę:", err);
-        const orderValElem = document.getElementById("order-val");
-        orderValElem.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
-        orderValElem.style.cursor = "pointer";
-        orderValElem.onclick = () => startQR(); 
+        qrInst.innerText = "KLIKNIJ, ABY WŁĄCZYĆ KAMERĘ";
+        qrInst.style.cursor = "pointer";
+        qrInst.onclick = () => startQR(); 
     }
 }
 
