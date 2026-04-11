@@ -2,6 +2,35 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznw5fK99kxqzCwcGXDj
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
+// Generator dźwięków Web Audio API (natywny, zero ładowania z zewnątrz)
+let audioCtx = null;
+function playSound(type) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'success') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Dźwięk A5
+        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.15);
+    } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(250, audioCtx.currentTime); // Agresywny, niższy ton
+        osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.4);
+    }
+}
+
 function setLoadingState(active) { 
     const card = document.querySelector('.task-card'); 
     if (active) { 
@@ -38,6 +67,7 @@ async function fetchNext(offset) {
                 setLoadingState(false);
             }, 350);
         } else { 
+            playSound('success'); // Fanfara na koniec? Używamy krótkiego beepa
             alert("ZAMÓWIENIE ZREALIZOWANE"); 
             location.reload(); 
         }
@@ -51,6 +81,7 @@ function onScan(text) {
     const code = text.trim();
     if (!currentOrderID) {
         isProcessing = true; 
+        playSound('success');
         currentOrderID = code; 
         document.getElementById("order-val").innerText = code;
         setTimeout(() => { 
@@ -62,6 +93,7 @@ function onScan(text) {
         }, 150);
     } else if (code === targetItem.ean) {
         isProcessing = true;
+        playSound('success');
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
@@ -94,7 +126,6 @@ function showQty() {
     const m = document.getElementById("qty-modal"); 
     document.getElementById("qty-name").innerText = targetItem.nazwa;
     
-    // Modyfikacja dla Front 4: wyświetlenie nr katalogowego i rozmiaru
     const sizeDisplay = targetItem.rozmiar || "---";
     document.getElementById("qty-kat-val").innerHTML = "Nr Kat: <span class='kat-number'>" + targetItem.nr_kat + "</span> <span class='meta-separator'>|</span> Roz: <span class='size-number'>" + sizeDisplay + "</span>"; 
     
@@ -119,11 +150,28 @@ function sendVal(q) {
 
 function showError(m) { 
     isProcessing = true; 
+    playSound('error'); // Dźwięk błędu
     const o = document.getElementById("error-overlay"); 
     document.getElementById("error-text").innerText = m; 
     o.style.display = "flex"; 
     setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
 }
+
+// Logika przycisków szybkiego dodawania
+document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
+    btn.onclick = () => {
+        const input = document.getElementById("qty-input");
+        let currentVal = parseInt(input.value) || 0;
+        let addVal = parseInt(btn.getAttribute('data-add'));
+        let newVal = currentVal + addVal;
+        // Zabezpieczenie przed wpisaniem więcej niż trzeba
+        if (newVal > targetItem.pozostalo) newVal = targetItem.pozostalo;
+        input.value = newVal;
+    };
+});
+document.getElementById('btn-quick-max').onclick = () => {
+    document.getElementById("qty-input").value = targetItem.pozostalo;
+};
 
 document.getElementById("btn-qty-ok").onclick = () => sendVal(document.getElementById("qty-input").value);
 document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-panel").style.display = "none"; document.getElementById("scanner-box").style.display = "block"; startEAN(); };
@@ -131,5 +179,11 @@ document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1)
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
+
+// Inicjalizacja dźwięków przy pierwszej interakcji użytkownika na dokumencie (wymóg przeglądarek)
+document.body.addEventListener('click', () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}, { once: true });
 
 startQR();
