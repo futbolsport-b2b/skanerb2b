@@ -6,6 +6,7 @@ let currentInputValue = "0";
 let zoomTimeout = null; 
 const html5QrCode = new Html5Qrcode("reader");
 
+// Funkcja Fullscreen
 function goFullscreen() {
     if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) {
@@ -144,15 +145,28 @@ async function fetchNext(offset) {
                 document.getElementById("task-lp").innerText = targetItem.lp; 
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat; 
-                document.getElementById("task-qty").innerText = targetItem.pozostalo;
                 document.getElementById("task-size").innerText = targetItem.rozmiar || "---";
                 
+                // === Wdrożenie warunku na kolor dla DO POBRANIA ===
+                const qtyElem = document.getElementById("task-qty");
+                qtyElem.innerText = targetItem.pozostalo;
+                const notesRow = document.getElementById("task-notes-row");
+                
+                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
+                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
+                    notesRow.style.display = "block"; 
+                    qtyElem.style.color = "var(--error)"; // Czerwony jeśli są uwagi
+                } else { 
+                    notesRow.style.display = "none"; 
+                    qtyElem.style.color = "var(--success)"; // Standardowy zielony
+                }
+                
+                // Generowanie zdjęcia
                 const imgBox = document.getElementById("product-image-box");
                 const imgElem = document.getElementById("task-img");
                 imgElem.src = "";
                 
                 if(targetItem.nr_kat && targetItem.nr_kat !== "---") {
-                    // FIX 43.7: RegEx /\s+/g zamienia TYLKO spacje na "_" (myślniki zostają)
                     let formattedKat = String(targetItem.nr_kat).trim().replace(/\s+/g, '_');
                     let finalImageUrl = IMAGE_BASE_URL + "1_" + formattedKat + ".jpg";
                     
@@ -163,13 +177,6 @@ async function fetchNext(offset) {
                     imgBox.style.display = "none";
                 }
 
-                const notesRow = document.getElementById("task-notes-row");
-                if (targetItem.uwagi && targetItem.uwagi.trim() !== "") { 
-                    document.getElementById("task-notes").innerText = targetItem.uwagi; 
-                    notesRow.style.display = "block"; 
-                } else { 
-                    notesRow.style.display = "none"; 
-                }
                 document.getElementById("task-panel").style.display = "block"; 
                 setLoadingState(false);
             }, 350);
@@ -193,28 +200,53 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        goFullscreen();
+        // FIX FULLSCREEN: Przebudowa interfejsu w guzik inicjujący
+        html5QrCode.stop().then(() => { 
+            document.getElementById("scanner-box").style.display = "none"; 
+            document.getElementById("btn-torch").style.display = "none";
+            document.getElementById("brand-title").style.display = "none"; 
+            
+            const orderValElem = document.getElementById("order-val");
+            
+            // Zamiana tekstu w przycisk wymuszający kliknięcie użytkownika
+            orderValElem.innerHTML = `${code}<br><span style="font-size:14px; color:var(--text-sec); display:block; margin-top:8px;">DOTKNIJ ABY ROZPOCZĄĆ</span>`;
+            orderValElem.classList.add("breathing"); 
+            orderValElem.style.textAlign = "center";
+            orderValElem.style.fontSize = "32px";
+            orderValElem.style.color = "#fff"; 
+            orderValElem.style.cursor = "pointer";
+            orderValElem.style.padding = "20px";
+            orderValElem.style.background = "var(--success)";
+            orderValElem.style.borderRadius = "16px";
+            orderValElem.style.marginTop = "15vh";
+            
+            // Reakcja na kliknięcie gwarantująca prawidłowe wymuszenie Fullscreen API
+            orderValElem.onclick = () => {
+                goFullscreen();
+                
+                // Inicjalizacja Audio za zgodą przeglądarki
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
 
-        document.getElementById("brand-title").style.display = "none"; 
-        const orderValElem = document.getElementById("order-val");
-        orderValElem.innerText = code;
-        orderValElem.classList.remove("breathing"); 
-        orderValElem.style.textAlign = "left";
-        orderValElem.style.fontSize = "26px";
-        orderValElem.style.color = "#fff"; 
-        orderValElem.style.cursor = "default";
-        orderValElem.onclick = null; 
-        
-        document.getElementById("global-progress-bar").style.display = "block"; 
+                // Reset stylu nagłówka
+                orderValElem.classList.remove("breathing");
+                orderValElem.innerHTML = code;
+                orderValElem.style.textAlign = "left";
+                orderValElem.style.fontSize = "26px";
+                orderValElem.style.background = "transparent";
+                orderValElem.style.padding = "0";
+                orderValElem.style.marginTop = "0";
+                orderValElem.onclick = null;
+                orderValElem.style.cursor = "default";
 
-        setTimeout(() => { 
-            html5QrCode.stop().then(() => { 
-                document.getElementById("scanner-box").style.display = "none"; 
-                document.getElementById("btn-torch").style.display = "none";
+                document.getElementById("global-progress-bar").style.display = "block"; 
                 document.getElementById("btn-finish-icon").style.display = "flex"; 
+                
                 fetchNext(0); 
-            }); 
-        }, 300); 
+            };
+        });
+        
     } else if (code === targetItem.ean) {
         isProcessing = true;
         playSound('success');
@@ -398,12 +430,5 @@ document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1)
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
-
-document.body.addEventListener('click', () => {
-    goFullscreen();
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-}, { once: true });
 
 startQR();
