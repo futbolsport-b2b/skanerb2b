@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v43.2</title>
-    <link rel="stylesheet" href="style.css?v=43.2">
+    <title>B2B TERMINAL v43.4</title>
+    <link rel="stylesheet" href="style.css?v=43.4">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1c1c1e">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -14,7 +14,7 @@
     
     <div class="app-container">
         <header id="main-header">
-            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.2</div>
+            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.43.4</div>
             
             <div class="header-main-row">
                 <div id="order-val" class="breathing">ZESKANUJ KOD QR</div>
@@ -51,6 +51,11 @@
                     <div class="task-content" id="product-data-area">
                         <div id="freeze-overlay"></div>
                         <h1 id="task-name">Ładowanie...</h1>
+                        
+                        <div class="product-image-box" id="product-image-box" style="display:none;">
+                            <img id="task-img" src="" alt="Zdjęcie produktu">
+                        </div>
+
                         <div class="product-meta-row">
                             <span id="task-kat">---</span><span class="meta-separator">|</span><span class="size-label">ROZ: <b id="task-size">---</b></span>
                         </div>
@@ -94,16 +99,3 @@
                     <button class="np-btn np-action" id="np-clear">C</button>
                     <button class="np-btn" data-val="0">0</button>
                     <button class="np-btn np-action" id="np-del">⌫</button>
-                </div>
-
-                <div class="input-group">
-                    <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
-                </div>
-                <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="app.js?v=43.2"></script>
-</body>
-</html>
