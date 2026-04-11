@@ -1,38 +1,23 @@
-/* v41 - Terminal Magazynowy - CSS */
+/* v42.0 - Terminal Magazynowy - CSS */
 :root {
     --bg: #000; --card-bg: #1c1c1e; --accent: #007aff;
     --success: #32d74b; --error: #ff453a;
+    --bright-green: #39ff14; 
     --text-sec: #8e8e93; --font: -apple-system, sans-serif;
 }
 
 body { margin: 0; font-family: var(--font); background: var(--bg); color: #fff; overflow: hidden; height: 100dvh; }
 .app-container { height: 100dvh; display: flex; flex-direction: column; }
-
 header { padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2c2c2e; }
 .brand-title { font-size: 11px; font-weight: 800; color: var(--text-sec); letter-spacing: 1px; }
 #order-val { font-size: 18px; font-weight: 700; color: var(--success); }
+#btn-finish-icon { background: var(--error); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 26px; font-weight: 900; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; cursor: pointer; }
 
-/* Ikona zamknięcia v40 fix */
-#btn-finish-icon { 
-    background: var(--error); border: none; color: #fff; 
-    width: 44px; height: 44px; border-radius: 50%; 
-    font-size: 26px; font-weight: 900; 
-    display: flex; align-items: center; justify-content: center;
-    line-height: 1; padding: 0; cursor: pointer;
-}
-
-/* INSTRUKCJA NAD SKANEREM - Nowe style v41 */
-#scanner-instruction { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 110; pointer-events: none; }
-.instruction-label { font-size: 14px; color: #fff; font-weight: 400; }
-#target-kat-display { font-size: 30px; font-weight: 900; color: var(--accent); margin-top: 2px; }
-
-/* SKANER */
 #scanner-box { position: relative; width: 100%; height: 45vh; background: #000; overflow: hidden; }
 #reader { width: 100% !important; height: 100% !important; }
-#scanner-visual { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+#scanner-visual { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; transition: all 0.3s; }
 body.qr-mode #scanner-visual { width: 250px; height: 250px; }
 body.ean-mode #scanner-visual { width: 310px; height: 120px; }
-
 .corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; }
 .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
@@ -41,35 +26,33 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #laser-line { display: none; position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: var(--error); box-shadow: 0 0 10px var(--error); }
 .ean-mode #laser-line { display: block; }
 
-/* MROŻENIE I PASEK v40 logic */
+.task-card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid #3a3a3c; margin: 15px; text-align: center; }
+.task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.btn-circle { width: 48px; height: 48px; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; font-size: 18px; }
+#task-name { font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+
+.product-meta-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 17px; }
+#task-kat { color: var(--accent); font-weight: 700; }
+.meta-separator { color: #3a3a3c; font-weight: 300; }
+#task-size { color: var(--bright-green); font-weight: 900; }
+
+.task-qty-box { background: #000; border-radius: 16px; padding: 15px; margin-bottom: 15px; }
+#task-qty { font-size: 60px; font-weight: 900; color: var(--success); }
+#task-notes-row { font-size: 15px; color: #fff; margin-bottom: 15px; }
+#task-notes { color: var(--error); font-weight: 900; text-transform: uppercase; }
+
+.btn-primary { width: 100%; height: 60px; border-radius: 16px; background: var(--accent); border: none; color: #fff; font-size: 18px; font-weight: 700; }
+
 #product-data-area { position: relative; }
-#freeze-overlay { display: none; position: absolute; inset: -10px; background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10; border-radius: 20px; }
+#freeze-overlay { display: none; position: absolute; inset: -15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10; border-radius: 20px; }
 .loading-mode #freeze-overlay { display: block; }
-#task-action-container { position: relative; width: 100%; height: 60px; margin-top: 10px; }
-#loading-bar-wrapper { display: none; width: 100%; height: 8px; background: #333; border-radius: 4px; position: absolute; top: 26px; overflow: hidden; }
+#loading-bar-wrapper { display: none; width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 26px; }
 #loading-bar-inner { width: 35%; height: 100%; background: var(--accent); border-radius: 4px; animation: progressMove 1.2s infinite ease-in-out; }
 .loading-mode #btn-scan-item { display: none; }
 .loading-mode #loading-bar-wrapper { display: block; }
 @keyframes progressMove { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
 
-/* KARTA PRODUKTU v36 */
-.task-card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid #3a3a3c; margin: 15px; text-align: center; }
-.task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.btn-circle { width: 48px; height: 48px; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; font-size: 18px; }
-#task-name { font-size: 24px; font-weight: 800; line-height: 1.2; margin-bottom: 5px; }
-#task-kat { font-size: 18px; color: var(--accent); font-weight: 700; margin-bottom: 20px; }
-.task-qty-box { background: #000; border-radius: 16px; padding: 15px; margin-bottom: 25px; }
-#task-qty { font-size: 60px; font-weight: 900; color: var(--success); }
-.btn-primary { width: 100%; height: 100%; border-radius: 16px; background: var(--accent); border: none; color: #fff; font-size: 18px; font-weight: 700; }
-
-/* PANEL ILOŚCI v36 STYLES - Przywrócono */
-#qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; align-items: flex-end; }
-.sheet { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); border-top: 1px solid #3a3a3c; animation: slideUp 0.3s ease-out; }
-.remain-badge { background: rgba(50, 215, 75, 0.1); color: var(--success); padding: 12px; border-radius: 14px; margin: 20px 0; text-align: center; font-weight: 700; }
-.input-group { display: flex; gap: 15px; margin-bottom: 15px; }
+.sheet { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); border-top: 1px solid #3a3a3c; }
+.btn-success { flex-grow: 1; border-radius: 16px; background: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; }
 #qty-input { width: 120px; height: 80px; background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 42px; text-align: center; outline: none; }
-.btn-success { flex-grow: 1; border-radius: 16px; background: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; }
-.btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; }
-
-#error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 69, 58, 0.95); z-index: 9999; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; margin-top: 15px; }
