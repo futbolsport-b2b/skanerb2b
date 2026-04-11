@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL ver.50</title>
-    <link rel="stylesheet" href="style.css?v=50">
+    <title>B2B TERMINAL v42.4</title>
+    <link rel="stylesheet" href="style.css?v=42.4">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
@@ -15,7 +15,7 @@
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.50</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.4</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
@@ -78,24 +78,17 @@
             <div class="sheet">
                 <div class="sheet-header">
                     <h2 id="qty-name">---</h2>
-                    <div class="f4-info-row">
-                        <span class="f4-label">Nr Kat: <b id="qty-kat-val">---</b></span>
-                        <span class="f4-sep">|</span>
-                        <span class="f4-label">ROZ: <b id="qty-roz-val">---</b></span>
-                    </div>
+                    <span id="qty-kat-val">Nr Kat: ---</span>
                 </div>
                 <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
                 <div class="input-group">
                     <input type="number" id="qty-input" inputmode="numeric" placeholder="0">
-                    <button id="btn-qty-ok" class="btn-success">
-                        <span id="btn-text-content">ZATWIERDŹ</span>
-                        <div class="btn-loader" id="btn-loader"></div>
-                    </button>
+                    <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
                 </div>
                 <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
             </div>
         </div>
     </div>
-    <script src="app.js?v=50"></script>
+    <script src="app.js?v=42.4"></script>
 </body>
 </html>
