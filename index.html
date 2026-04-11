@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v42.6 BLUE-SKY</title>
-    <link rel="stylesheet" href="style.css?v=42.6">
+    <title>B2B TERMINAL v42.7 BLUE-SKY</title>
+    <link rel="stylesheet" href="style.css?v=42.7">
     <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="qr-mode">
     <div id="error-overlay"><div id="error-text">BŁĄD</div></div>
-    
     <div class="app-container">
         <header>
             <div id="header-content">
                 <div class="brand-row">
                     <span class="status-dot"></span>
-                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.6 (BLUE-SKY Fix)</span>
+                    <span class="brand-title">TERMINAL MAGAZYNOWY ver.42.7</span>
                 </div>
                 <div id="order-info">
                     <span class="label">ZAMÓWIENIE</span>
@@ -50,7 +49,7 @@
                         <span class="task-lp-info">POZYCJA <b id="task-lp">--</b></span>
                         <button id="btn-next" class="btn-circle">▶</button>
                     </div>
-                    <div class="task-content" id="product-data-area">
+                    <div class="task-content">
                         <div id="freeze-overlay"></div>
                         <h1 id="task-name">Ładowanie...</h1>
                         <div class="product-meta-row">
@@ -78,7 +77,7 @@
             <div class="sheet">
                 <div class="sheet-header">
                     <h2 id="qty-name">---</h2>
-                    <span id="qty-data-line" class="f4-meta-text-v424">Nr Kat: ---</span>
+                    <span id="qty-kat-val">Nr Kat: ---</span>
                 </div>
                 <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
                 <div class="input-group">
@@ -89,6 +88,6 @@
             </div>
         </div>
     </div>
-    <script src="app.js?v=42.6"></script>
+    <script src="app.js?v=42.7"></script>
 </body>
 </html>
