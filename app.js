@@ -145,22 +145,21 @@ function onScan(text) {
         triggerScanVisual('success');
         currentOrderID = code; 
         
-        // Zmiany w nagłówku po zeskanowaniu QR
-        document.getElementById("brand-title").style.display = "none"; // Ukrycie napisu System Kompletacji
+        document.getElementById("brand-title").style.display = "none"; 
         const orderValElem = document.getElementById("order-val");
         orderValElem.innerText = code;
         orderValElem.classList.remove("breathing"); 
         orderValElem.style.textAlign = "left";
         orderValElem.style.fontSize = "26px";
-        orderValElem.style.color = "#fff"; // Numer zamówienia na biało, by był bardzo czytelny
+        orderValElem.style.color = "#fff"; 
         
-        document.getElementById("global-progress-bar").style.display = "block"; // Pokazujemy gruby zielony pasek
+        document.getElementById("global-progress-bar").style.display = "block"; 
 
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
                 document.getElementById("btn-torch").style.display = "none";
-                document.getElementById("btn-finish-icon").style.display = "flex"; // Pokazanie prostokątnego ZAKOŃCZ
+                document.getElementById("btn-finish-icon").style.display = "flex"; 
                 fetchNext(0); 
             }); 
         }, 300); 
@@ -213,7 +212,6 @@ function updateDisplay(val) {
 
 function flashDisplayError() {
     playSound('error');
-    // Zmiana tekstu głosu na dużo bardziej czytelny dla TTS
     speakVoice("Zły produkt"); 
     const disp = document.getElementById("qty-input-display");
     disp.classList.add("flash-error");
@@ -284,7 +282,14 @@ function sendVal(q) {
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
-            speakVoice("Zapisano"); 
+            // INTELIGENTNA KOMENDA GŁOSOWA (v43.2)
+            let qInt = parseInt(q);
+            if (qInt >= targetItem.pozostalo) {
+                speakVoice("Zatwierdzono pełne pobranie");
+            } else {
+                speakVoice(`Zatwierdzono ${qInt} sztuk`);
+            }
+            
             fetchNext(currentOffset); 
         } else { 
             btnOk.classList.remove("is-loading");
