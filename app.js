@@ -94,8 +94,9 @@ function showQty() {
     const m = document.getElementById("qty-modal"); 
     document.getElementById("qty-name").innerText = targetItem.nazwa;
     
-    // Modyfikacja dla Front 4: wstrzyknięcie HTML z klasą zamiast zwykłego tekstu
-    document.getElementById("qty-kat-val").innerHTML = "Nr Kat: <span class='kat-number'>" + targetItem.nr_kat + "</span>"; 
+    // Modyfikacja dla Front 4: wyświetlenie nr katalogowego i rozmiaru
+    const sizeDisplay = targetItem.rozmiar || "---";
+    document.getElementById("qty-kat-val").innerHTML = "Nr Kat: <span class='kat-number'>" + targetItem.nr_kat + "</span> <span class='meta-separator'>|</span> Roz: <span class='size-number'>" + sizeDisplay + "</span>"; 
     
     document.getElementById("qty-remain").innerText = targetItem.pozostalo;
     m.style.display = "flex"; 
