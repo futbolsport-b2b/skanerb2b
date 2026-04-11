@@ -2,7 +2,6 @@
 body { margin: 0; font-family: var(--font); background: var(--bg); color: #fff; overflow: hidden; height: 100dvh; overscroll-behavior-y: none; }
 .app-container { height: 100dvh; display: flex; flex-direction: column; }
 
-/* Nowoczesny układ nagłówka (v43.1) */
 header { padding: calc(env(safe-area-inset-top) + 15px) 20px 15px; background: var(--card-bg); border-bottom: 1px solid #2c2c2e; display: flex; flex-direction: column; gap: 12px; width: 100%; box-sizing: border-box; }
 .brand-title { font-size: 11px; font-weight: 800; color: var(--text-sec); letter-spacing: 1px; text-align: center; width: 100%; transition: opacity 0.3s; }
 .header-main-row { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px; }
@@ -10,11 +9,9 @@ header { padding: calc(env(safe-area-inset-top) + 15px) 20px 15px; background: v
 #order-val { font-size: 22px; font-weight: 900; color: var(--success); flex-grow: 1; text-align: center; transition: all 0.3s ease; }
 #order-val.breathing { display: block; animation: text-breathe 2s infinite ease-in-out; }
 
-/* Nowy, prostokątny przycisk ZAKOŃCZ */
 #btn-finish-icon { background: var(--error); border: none; color: #fff; height: 44px; padding: 0 20px; border-radius: 12px; font-size: 14px; font-weight: 800; display: none; align-items: center; justify-content: center; cursor: pointer; letter-spacing: 1px; transition: transform 0.1s, background 0.2s; box-shadow: 0 4px 10px rgba(255, 69, 58, 0.2); }
 #btn-finish-icon:active { transform: scale(0.95); background: #d63a31; }
 
-/* Grubszy i jaskrawy Pasek Postępu */
 #global-progress-bar { width: 100%; height: 8px; background: #000; border-radius: 4px; overflow: hidden; }
 #global-progress-fill { width: 0%; height: 100%; background: var(--bright-green); transition: width 0.5s ease-out; box-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
 
