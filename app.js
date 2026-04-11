@@ -8,12 +8,10 @@ const html5QrCode = new Html5Qrcode("reader");
 let audioCtx = null;
 let wakeLock = null;
 
-// Rejestracja Service Workera dla wsparcia Offline
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err => console.error("SW Reg Error:", err));
 }
 
-// Solidny Unlocker dla iOS i restrykcyjnych przeglądarek
 function unlockAudioAPI() {
     if (!audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -21,7 +19,6 @@ function unlockAudioAPI() {
     }
     if (audioCtx.state === 'suspended') audioCtx.resume();
     
-    // Odtworzenie pustego dźwięku - omija restrykcje Apple
     const buffer = audioCtx.createBuffer(1, 1, 22050);
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
@@ -118,7 +115,6 @@ function setLoadingState(active) {
     } 
 }
 
-// ROZWIĄZANIE: Wrapper Fetch z automatycznym wznawianiem przy gubieniu pakietów
 async function fetchWithRetry(url, retries = 3, backoff = 500) {
     for (let i = 0; i < retries; i++) {
         try {
@@ -127,12 +123,11 @@ async function fetchWithRetry(url, retries = 3, backoff = 500) {
             return await response.json();
         } catch (err) {
             if (i === retries - 1) throw err;
-            await new Promise(res => setTimeout(res, backoff * Math.pow(2, i))); // Exponential backoff
+            await new Promise(res => setTimeout(res, backoff * Math.pow(2, i))); 
         }
     }
 }
 
-// Prefetching zdjęć (ładowanie do cache przeglądarki w tle)
 function prefetchImage(nr_kat) {
     if (!nr_kat || nr_kat === "---") return;
     const formattedKat = String(nr_kat).trim().replace(/\s+/g, '_');
@@ -151,6 +146,23 @@ document.getElementById('btn-torch').onclick = async () => {
         torchOn = false;
         alert("Latarka nie jest obsługiwana w tym urządzeniu.");
     }
+};
+
+// NOWOŚĆ: Logika anulowania skanowania i powrotu do karty produktu
+document.getElementById('btn-back-scan').onclick = () => {
+    isProcessing = true;
+    html5QrCode.stop().then(() => {
+        isProcessing = false;
+        document.getElementById("scanner-box").style.display = "none";
+        document.getElementById("btn-torch").style.display = "none";
+        document.getElementById("btn-back-scan").style.display = "none";
+        document.getElementById("task-panel").style.display = "block";
+    }).catch(() => {
+        // Fallback w razie błędu biblioteki
+        isProcessing = false;
+        document.getElementById("scanner-box").style.display = "none";
+        document.getElementById("task-panel").style.display = "block";
+    });
 };
 
 document.getElementById('task-img').onclick = function() {
@@ -184,7 +196,6 @@ async function fetchNext(offset) {
             targetItem = res.item; 
             currentOffset = res.current_offset;
             
-            // Prefetch kolejnego zdjęcia dla płynności
             if(res.prefetch_kat) prefetchImage(res.prefetch_kat);
 
             setTimeout(() => {
@@ -254,6 +265,7 @@ function onScan(text) {
         html5QrCode.stop().then(() => { 
             document.getElementById("scanner-box").style.display = "none"; 
             document.getElementById("btn-torch").style.display = "none";
+            document.getElementById("btn-back-scan").style.display = "none"; // ukrycie powrotu
             document.getElementById("brand-title").style.display = "none"; 
             
             const orderValElem = document.getElementById("order-val");
@@ -297,6 +309,7 @@ function onScan(text) {
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
                 document.getElementById("btn-torch").style.display = "none";
+                document.getElementById("btn-back-scan").style.display = "none"; // ukrycie powrotu
                 
                 if (targetItem.pozostalo > 1) {
                     showQty(); 
@@ -316,6 +329,7 @@ async function startQR() {
     document.body.className = "qr-mode"; 
     document.getElementById("scanner-instruction").style.display = "none"; 
     document.getElementById("btn-torch").style.display = "none"; 
+    document.getElementById("btn-back-scan").style.display = "none"; 
     
     try {
         await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
@@ -338,7 +352,10 @@ async function startEAN() {
     document.getElementById("target-kat-val").innerText = targetItem.nr_kat;
     document.getElementById("target-size-val").innerText = targetItem.rozmiar || "---"; 
     document.getElementById("scanner-instruction").style.display = "block";
+    
+    // Pokazanie latarki i przycisku powrotu podczas skanowania EAN
     document.getElementById("btn-torch").style.display = "flex"; 
+    document.getElementById("btn-back-scan").style.display = "flex"; 
     document.getElementById("btn-torch").classList.remove('active');
     torchOn = false;
     
@@ -423,7 +440,6 @@ function sendVal(q) {
     btnOk.classList.add("is-loading");
     btnOk.disabled = true;
 
-    // Autowznawianie żądania validate
     fetchWithRetry(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(res => { 
         if (res.status === "success") { 
@@ -475,7 +491,11 @@ taskPanel.addEventListener('touchend', e => {
 }, {passive: true});
 
 document.getElementById("btn-qty-ok").onclick = () => sendVal(currentInputValue);
-document.getElementById("btn-scan-item").onclick = () => { document.getElementById("task-panel").style.display = "none"; document.getElementById("scanner-box").style.display = "block"; startEAN(); };
+document.getElementById("btn-scan-item").onclick = () => { 
+    document.getElementById("task-panel").style.display = "none"; 
+    document.getElementById("scanner-box").style.display = "block"; 
+    startEAN(); 
+};
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Zakończyć to zamówienie?")) location.reload(); };
