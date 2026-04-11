@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>B2B TERMINAL v44.2</title>
-    <link rel="stylesheet" href="style.css?v=44.2">
+    <title>B2B TERMINAL v1.2</title>
+    <link rel="stylesheet" href="style.css?v=1.2">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1c1c1e">
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -18,11 +18,11 @@
     
     <div class="app-container">
         <header id="main-header">
-            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.44.2</div>
+            <div id="brand-title" class="brand-title">SYSTEM KOMPLETACJI ZAMÓWIEŃ B2B ver.1.2</div>
             
-            <div class="header-main-row">
-                <div id="order-val" class="breathing">ZESKANUJ KOD QR</div>
-                <button id="btn-finish-icon">ZAKOŃCZ</button>
+            <div class="header-main-row" id="header-main-row" style="display: none;">
+                <div id="order-val"></div>
+                <button id="btn-finish-icon" style="display: none;">ZAKOŃCZ</button>
             </div>
 
             <div id="global-progress-bar" style="display:none;">
@@ -47,6 +47,13 @@
                     <div id="laser-line"></div>
                 </div>
             </section>
+
+            <div id="startup-screen-elements">
+                <div id="qr-instruction" class="breathing">ZESKANUJ KOD QR</div>
+                <div class="logo-container">
+                    <img src="logo.png" alt="Logo" id="company-logo">
+                </div>
+            </div>
 
             <section id="task-panel" style="display:none;">
                 <div class="task-card">
@@ -84,15 +91,12 @@
                     <span id="qty-kat-val">Nr Kat: ---</span>
                 </div>
                 <div class="remain-badge">Pozostało do zebrania: <b id="qty-remain">0</b></div>
-                
                 <div class="quick-add-row">
                     <button class="btn-quick" data-add="1">+1</button>
                     <button class="btn-quick" data-add="5">+5</button>
                     <button class="btn-quick" id="btn-quick-max">MAX</button>
                 </div>
-
                 <div id="qty-input-display" class="custom-input-display">0</div>
-                
                 <div class="custom-numpad">
                     <button class="np-btn" data-val="1">1</button>
                     <button class="np-btn" data-val="2">2</button>
@@ -107,7 +111,6 @@
                     <button class="np-btn" data-val="0">0</button>
                     <button class="np-btn np-action" id="np-del">⌫</button>
                 </div>
-
                 <div class="modal-action-row">
                     <button id="btn-qty-cancel" class="btn-cancel">ANULUJ</button>
                     <button id="btn-qty-ok" class="btn-success">ZATWIERDŹ</button>
@@ -116,6 +119,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=44.2"></script>
+    <script src="app.js?v=1.2"></script>
 </body>
 </html>
