@@ -1,5 +1,5 @@
-// v42.2 - Terminal Magazynowy - JS
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwitbXrR7CtXn94LUImb_YjPdlKSu_fZ2jjcEZ2IAWwJT7vlnk2kt90a038kjTjiL50/exec"; 
+// v42.3 - Terminal Magazynowy - JS
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdu1mpGb9WEj1b9mPejyzAAqCHSqloVDOq2dkP8PUW9ys89Iu7-p8WWJKDhAxex6-D/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
@@ -70,7 +70,9 @@ async function startQR() {
 
 async function startEAN() {
     isProcessing = false; document.body.className = "ean-mode";
-    document.getElementById("target-kat-display").innerText = targetItem.nr_kat;
+    // FRONT 3 Update: Wstrzykiwanie numeru kat i rozmiaru do nagłówka skanera
+    document.getElementById("target-kat-val").innerText = targetItem.nr_kat;
+    document.getElementById("target-size-val").innerText = targetItem.rozmiar || "---";
     document.getElementById("scanner-instruction").style.display = "block";
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
