@@ -20,6 +20,10 @@ function playSound(type) {
         osc.start(audioCtx.currentTime);
         osc.stop(audioCtx.currentTime + 0.15);
     } else if (type === 'error') {
+        if ("vibrate" in navigator) {
+            navigator.vibrate([200, 100, 200]); 
+        }
+
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(220, audioCtx.currentTime); 
         gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
@@ -101,7 +105,12 @@ function onScan(text) {
         playSound('success');
         triggerScanVisual('success');
         currentOrderID = code; 
-        document.getElementById("order-val").innerText = code;
+        
+        // Front 1: Wpisanie kodu zamówienia i ZATRZYMANIE animacji oddechu
+        const orderValElem = document.getElementById("order-val");
+        orderValElem.innerText = code;
+        orderValElem.classList.remove("breathing"); // Wyłączamy pulsowanie
+
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
@@ -189,7 +198,6 @@ function showError(m) {
     setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
 }
 
-// Logika przycisków szybkiego dodawania z obsługą błędów
 document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
     btn.onclick = () => {
         const input = document.getElementById("qty-input");
@@ -197,14 +205,12 @@ document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
         let addVal = parseInt(btn.getAttribute('data-add'));
         let newVal = currentVal + addVal;
         
-        // Zabezpieczenie: Jeśli ilość po dodaniu byłaby większa niż pozostała
         if (newVal > targetItem.pozostalo) {
-            playSound('error'); // Sygnał błędu
-            btn.classList.add('flash-error'); // Czerwone podświetlenie
-            setTimeout(() => { btn.classList.remove('flash-error'); }, 300); // Wyłączenie po 300ms
-            // UWAGA: Nie zmieniamy zawartości input.value (zgodnie z prośbą)
+            playSound('error'); 
+            btn.classList.add('flash-error'); 
+            setTimeout(() => { btn.classList.remove('flash-error'); }, 300); 
         } else {
-            input.value = newVal; // Prawidłowe dodanie
+            input.value = newVal; 
         }
     };
 });
