@@ -63,7 +63,6 @@ async function fetchNext(offset) {
                 const m = document.getElementById("qty-modal");
                 if (m.style.display === "flex") {
                     m.style.display = "none";
-                    // Resetowanie przycisku bez ingerencji w tekst
                     const btnOk = document.getElementById("btn-qty-ok");
                     btnOk.classList.remove("is-loading");
                     btnOk.disabled = false;
@@ -165,7 +164,6 @@ function showQty() {
 function sendVal(q) {
     if(!q || isNaN(q) || parseInt(q) <= 0) return; 
 
-    // Blokujemy przycisk i uruchamiamy animację CSS (tekst znika, włącza się pasek)
     const btnOk = document.getElementById("btn-qty-ok");
     btnOk.classList.add("is-loading");
     btnOk.disabled = true;
@@ -191,16 +189,26 @@ function showError(m) {
     setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
 }
 
+// Logika przycisków szybkiego dodawania z obsługą błędów
 document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
     btn.onclick = () => {
         const input = document.getElementById("qty-input");
         let currentVal = parseInt(input.value) || 0;
         let addVal = parseInt(btn.getAttribute('data-add'));
         let newVal = currentVal + addVal;
-        if (newVal > targetItem.pozostalo) newVal = targetItem.pozostalo;
-        input.value = newVal;
+        
+        // Zabezpieczenie: Jeśli ilość po dodaniu byłaby większa niż pozostała
+        if (newVal > targetItem.pozostalo) {
+            playSound('error'); // Sygnał błędu
+            btn.classList.add('flash-error'); // Czerwone podświetlenie
+            setTimeout(() => { btn.classList.remove('flash-error'); }, 300); // Wyłączenie po 300ms
+            // UWAGA: Nie zmieniamy zawartości input.value (zgodnie z prośbą)
+        } else {
+            input.value = newVal; // Prawidłowe dodanie
+        }
     };
 });
+
 document.getElementById('btn-quick-max').onclick = () => {
     document.getElementById("qty-input").value = targetItem.pozostalo;
 };
