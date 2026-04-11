@@ -2,7 +2,6 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznw5fK99kxqzCwcGXDj
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
 
-// Generator dźwięków Web Audio API (natywny, zero ładowania z zewnątrz)
 let audioCtx = null;
 function playSound(type) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -21,13 +20,30 @@ function playSound(type) {
         osc.start(audioCtx.currentTime);
         osc.stop(audioCtx.currentTime + 0.15);
     } else if (type === 'error') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(250, audioCtx.currentTime); // Agresywny, niższy ton
-        osc.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.3);
-        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        // Łagodniejszy, krótki, podwójny sygnał ostrzegawczy
+        osc.type = 'triangle';
+        
+        // Pierwszy dźwięk (0.0s do 0.1s)
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); 
+        gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        
+        // Drugi dźwięk (0.15s do 0.25s)
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime + 0.15); 
+        gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime + 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+
         osc.start(audioCtx.currentTime);
-        osc.stop(audioCtx.currentTime + 0.4);
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+}
+
+// Funkcja dodająca kolor zielony/czerwony na celowniku
+function triggerScanVisual(type) {
+    const sv = document.getElementById("scanner-visual");
+    if(sv) {
+        sv.className = type === 'success' ? 'scan-success' : 'scan-error';
+        setTimeout(() => { sv.className = ''; }, 400); // Wróć do bieli po 400ms
     }
 }
 
@@ -67,7 +83,7 @@ async function fetchNext(offset) {
                 setLoadingState(false);
             }, 350);
         } else { 
-            playSound('success'); // Fanfara na koniec? Używamy krótkiego beepa
+            playSound('success'); 
             alert("ZAMÓWIENIE ZREALIZOWANE"); 
             location.reload(); 
         }
@@ -82,6 +98,7 @@ function onScan(text) {
     if (!currentOrderID) {
         isProcessing = true; 
         playSound('success');
+        triggerScanVisual('success');
         currentOrderID = code; 
         document.getElementById("order-val").innerText = code;
         setTimeout(() => { 
@@ -90,18 +107,20 @@ function onScan(text) {
                 document.getElementById("btn-finish-icon").style.display = "flex"; 
                 fetchNext(0); 
             }); 
-        }, 150);
+        }, 300); // Wydłużono z 150ms do 300ms, by pracownik zauważył zieloną ramkę
     } else if (code === targetItem.ean) {
         isProcessing = true;
         playSound('success');
+        triggerScanVisual('success');
         setTimeout(() => { 
             html5QrCode.stop().then(() => { 
                 document.getElementById("scanner-box").style.display = "none"; 
                 if (targetItem.pozostalo > 1) showQty(); 
                 else sendVal(1); 
             }); 
-        }, 150);
+        }, 300); 
     } else { 
+        triggerScanVisual('error');
         showError("BŁĘDNY PRODUKT"); 
     }
 }
@@ -137,6 +156,7 @@ function showQty() {
 }
 
 function sendVal(q) {
+    if(!q || isNaN(q) || parseInt(q) <= 0) return; // Zabezpieczenie przed wysłaniem pustego/zerowego pola
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
@@ -150,21 +170,19 @@ function sendVal(q) {
 
 function showError(m) { 
     isProcessing = true; 
-    playSound('error'); // Dźwięk błędu
+    playSound('error'); 
     const o = document.getElementById("error-overlay"); 
     document.getElementById("error-text").innerText = m; 
     o.style.display = "flex"; 
     setTimeout(() => { o.style.display = "none"; isProcessing = false; }, 1500); 
 }
 
-// Logika przycisków szybkiego dodawania
 document.querySelectorAll('.btn-quick[data-add]').forEach(btn => {
     btn.onclick = () => {
         const input = document.getElementById("qty-input");
         let currentVal = parseInt(input.value) || 0;
         let addVal = parseInt(btn.getAttribute('data-add'));
         let newVal = currentVal + addVal;
-        // Zabezpieczenie przed wpisaniem więcej niż trzeba
         if (newVal > targetItem.pozostalo) newVal = targetItem.pozostalo;
         input.value = newVal;
     };
@@ -180,7 +198,6 @@ document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1)
 document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
-// Inicjalizacja dźwięków przy pierwszej interakcji użytkownika na dokumencie (wymóg przeglądarek)
 document.body.addEventListener('click', () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
