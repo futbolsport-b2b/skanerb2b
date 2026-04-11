@@ -1,4 +1,4 @@
-// v37.1 - Terminal Magazynowy - JS
+// v37 - Terminal Magazynowy - JS
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwL9WvrgYCGl4q_Drdh32kp_6kajwAHWNO8jiB57uq2hLUO-DU2UyNklQ6b0GgHofDELg/exec"; 
 let currentOrderID = null, currentOffset = 0, targetItem = null, isProcessing = false;
 const html5QrCode = new Html5Qrcode("reader");
@@ -7,17 +7,21 @@ function setCornersColor(color) {
     document.querySelectorAll('.corner').forEach(el => el.style.borderColor = color);
 }
 
-function freezeUI(state) {
-    const content = document.querySelector('.task-card');
-    if (state) content.classList.add('loading-state');
-    else content.classList.remove('loading-state');
+// Funkcja Mrożenia i Paska Postępu
+function setLoader(state) {
+    const card = document.querySelector('.task-card');
+    if (state) {
+        card.classList.add('loading-state');
+    } else {
+        card.classList.remove('loading-state');
+    }
 }
 
 async function startQR() {
     isProcessing = false;
     document.body.className = "qr-mode";
     document.getElementById("scanner-instruction").style.display = "none";
-    document.getElementById("footer-logo").style.display = "flex"; // Pokaż logo
+    document.getElementById("footer-logo").style.display = "flex";
     setCornersColor("white");
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
@@ -27,7 +31,7 @@ async function startEAN() {
     document.body.className = "ean-mode";
     document.getElementById("target-kat-display").innerText = targetItem.nr_kat;
     document.getElementById("scanner-instruction").style.display = "block";
-    document.getElementById("footer-logo").style.display = "none"; // Ukryj logo podczas skanowania towaru
+    document.getElementById("footer-logo").style.display = "none";
     setCornersColor("white");
     await html5QrCode.start({ facingMode: "environment" }, { fps: 25 }, onScan);
 }
@@ -66,7 +70,7 @@ function onScan(text) {
 }
 
 async function fetchNext(offset) {
-    freezeUI(true);
+    setLoader(true); // Włącz mrożenie i pasek
     currentOffset = offset;
     try {
         const res = await fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&action=get_next&offset=${offset}`).then(r => r.json());
@@ -74,22 +78,22 @@ async function fetchNext(offset) {
             targetItem = res.item;
             currentOffset = res.current_offset;
             
+            // Krótkie opóźnienie, by użytkownik zauważył pasek postępu
             setTimeout(() => {
                 document.getElementById("task-lp").innerText = targetItem.lp;
                 document.getElementById("task-name").innerText = targetItem.nazwa;
                 document.getElementById("task-kat").innerText = targetItem.nr_kat;
                 document.getElementById("task-qty").innerText = targetItem.pozostalo;
-                
                 document.getElementById("task-panel").style.display = "block";
-                freezeUI(false);
+                setLoader(false); // Wyłącz mrożenie
                 isProcessing = false;
-            }, 400); // Nieco dłuższy czas by pokazać pasek postępu
+            }, 300);
         } else {
             alert("ZREALIZOWANO");
             location.reload();
         }
     } catch (e) { 
-        freezeUI(false);
+        setLoader(false);
         isProcessing = false; 
     }
 }
@@ -120,7 +124,7 @@ function sendVal(q) {
 
 function showError(m) {
     isProcessing = true;
-    setCornersColor("#ff3b30");
+    setCornersColor("#ff453a");
     playBeep(200, 600);
     const o = document.getElementById("error-overlay");
     document.getElementById("error-text").innerText = m;
@@ -136,7 +140,7 @@ document.getElementById("btn-scan-item").onclick = () => {
 };
 document.getElementById("btn-prev").onclick = () => fetchNext(currentOffset - 1);
 document.getElementById("btn-next").onclick = () => fetchNext(currentOffset + 1);
-document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować zamówienie?")) location.reload(); };
+document.getElementById("btn-finish-icon").onclick = () => { if(confirm("Anulować?")) location.reload(); };
 document.getElementById("btn-qty-cancel").onclick = () => { document.getElementById("qty-modal").style.display = "none"; fetchNext(currentOffset); };
 
 function playBeep(f, d) { try { const c = new AudioContext(); const o = c.createOscillator(); o.frequency.value = f; o.connect(c.destination); o.start(); o.stop(c.currentTime + (d/1000)); } catch(e) {} }
