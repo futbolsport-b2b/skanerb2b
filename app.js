@@ -60,14 +60,12 @@ async function fetchNext(offset) {
             targetItem = res.item; 
             currentOffset = res.current_offset;
             setTimeout(() => {
-                // Front 4: Ukrywamy modal DOPIERO gdy nowy produkt jest wczytany i gotowy do pokazania
                 const m = document.getElementById("qty-modal");
                 if (m.style.display === "flex") {
                     m.style.display = "none";
-                    // Resetujemy przycisk na przyszłość
+                    // Resetowanie przycisku bez ingerencji w tekst
                     const btnOk = document.getElementById("btn-qty-ok");
                     btnOk.classList.remove("is-loading");
-                    btnOk.innerText = "ZATWIERDŹ";
                     btnOk.disabled = false;
                 }
 
@@ -154,10 +152,8 @@ function showQty() {
     
     document.getElementById("qty-remain").innerText = targetItem.pozostalo;
     
-    // Upewniamy się, że przycisk jest czysty za każdym razem gdy włączamy Front 4
     const btnOk = document.getElementById("btn-qty-ok");
     btnOk.classList.remove("is-loading");
-    btnOk.innerText = "ZATWIERDŹ";
     btnOk.disabled = false;
 
     m.style.display = "flex"; 
@@ -169,21 +165,17 @@ function showQty() {
 function sendVal(q) {
     if(!q || isNaN(q) || parseInt(q) <= 0) return; 
 
-    // Front 4: Aktywacja stanu zapisu na przycisku i zablokowanie kliknięć
+    // Blokujemy przycisk i uruchamiamy animację CSS (tekst znika, włącza się pasek)
     const btnOk = document.getElementById("btn-qty-ok");
     btnOk.classList.add("is-loading");
-    btnOk.innerText = "PRZETWARZANIE...";
     btnOk.disabled = true;
 
     fetch(`${SCRIPT_URL}?orderID=${encodeURIComponent(currentOrderID)}&ean=${encodeURIComponent(targetItem.ean)}&qty=${q}&action=validate`)
     .then(r => r.json()).then(res => { 
         if (res.status === "success") { 
-            // NIE ukrywamy tu modala. Modal ukryje się w funkcji fetchNext gdy pobierze kolejny produkt.
             fetchNext(currentOffset); 
         } else { 
-            // W razie błędu resetujemy przycisk, by dać szansę na poprawkę
             btnOk.classList.remove("is-loading");
-            btnOk.innerText = "ZATWIERDŹ";
             btnOk.disabled = false;
             showError(res.msg); 
         } 
