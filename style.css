@@ -1,18 +1,10 @@
-/* ver. 42.4 - Terminal Magazynowy - CSS */
-:root {
-    --bg: #000; --card-bg: #1c1c1e; --accent: #007aff;
-    --success: #32d74b; --error: #ff453a;
-    --bright-green: #39ff14; 
-    --text-sec: #8e8e93; --font: -apple-system, sans-serif;
-}
-
+:root { --bg: #000; --card-bg: #1c1c1e; --accent: #007aff; --success: #32d74b; --error: #ff453a; --bright-green: #39ff14; --text-sec: #8e8e93; --font: -apple-system, sans-serif; }
 body { margin: 0; font-family: var(--font); background: var(--bg); color: #fff; overflow: hidden; height: 100dvh; }
 .app-container { height: 100dvh; display: flex; flex-direction: column; }
 header { padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2c2c2e; }
 .brand-title { font-size: 11px; font-weight: 800; color: var(--text-sec); letter-spacing: 1px; }
 #order-val { font-size: 18px; font-weight: 700; color: var(--success); }
 #btn-finish-icon { background: var(--error); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 26px; font-weight: 900; display: none; align-items: center; justify-content: center; cursor: pointer; }
-
 #scanner-box { position: relative; width: 100%; height: 45vh; background: #000; overflow: hidden; }
 #reader { width: 100% !important; height: 100% !important; }
 #scanner-instruction { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 110; pointer-events: none; }
@@ -20,11 +12,9 @@ header { padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; display: flex
 #target-kat-val, .ean-meta-sep, .ean-size-container { font-size: 28px; font-weight: 900; }
 #target-kat-val { color: var(--accent); }
 #target-size-val { color: var(--error); font-weight: 900; }
-
 #scanner-visual { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; transition: all 0.3s; }
 body.qr-mode #scanner-visual { width: 250px; height: 250px; }
 body.ean-mode #scanner-visual { width: 310px; height: 120px; }
-
 .corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; }
 .corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
@@ -32,7 +22,6 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 .corner.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
 #laser-line { display: none; position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: var(--error); box-shadow: 0 0 10px var(--error); }
 .ean-mode #laser-line { display: block; }
-
 .task-card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid #3a3a3c; margin: 15px; text-align: center; }
 .task-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .btn-circle { width: 48px; height: 48px; border-radius: 14px; background: #2c2c2e; border: none; color: #fff; font-size: 18px; }
@@ -46,7 +35,6 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 #task-notes-row { font-size: 15px; color: #fff; margin-bottom: 15px; }
 #task-notes { color: var(--error); font-weight: 900; text-transform: uppercase; }
 .btn-primary { width: 100%; height: 60px; border-radius: 16px; background: var(--accent); border: none; color: #fff; font-size: 18px; font-weight: 700; }
-
 #product-data-area { position: relative; }
 #freeze-overlay { display: none; position: absolute; inset: -15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10; border-radius: 20px; }
 .loading-mode #freeze-overlay { display: block; }
@@ -55,7 +43,6 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 .loading-mode #btn-scan-item { display: none; }
 .loading-mode #loading-bar-wrapper { display: block; }
 @keyframes progressMove { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
-
 #qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; align-items: flex-end; }
 .sheet { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); border-top: 1px solid #3a3a3c; animation: slideUp 0.3s ease-out; }
 .remain-badge { background: rgba(50, 215, 75, 0.1); color: var(--success); padding: 12px; border-radius: 14px; margin: 20px 0; text-align: center; font-weight: 700; }
@@ -65,3 +52,18 @@ body.ean-mode #scanner-visual { width: 310px; height: 120px; }
 .btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; margin-top: 15px; }
 #error-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 69, 58, 0.95); z-index: 9999; justify-content: center; align-items: center; font-size: 32px; font-weight: 900; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* Modyfikacje dla Front 4 */
+#qty-kat-val {
+    font-size: 18px; 
+    color: var(--text-sec);
+    display: block;
+    margin-top: 8px; 
+}
+
+#qty-kat-val .kat-number {
+    color: var(--accent); 
+    font-weight: 900; 
+    font-size: 22px; 
+    letter-spacing: 1px;
+}
