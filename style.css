@@ -1,20 +1,42 @@
-/* v42.8 - CSS Ratunkowy - Minimalistyczny */
-:root { --bg: #000; --accent: #007aff; --success: #32d74b; --error: #ff453a; }
-body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; }
-header { padding: 20px; border-bottom: 1px solid #333; }
-#scanner-box { position: relative; width: 100%; height: 45vh; }
+/* v42.4 (BLUE-SKY) - Terminal Magazynowy - CSS */
+:root {
+    --bg: #000; --card-bg: #1c1c1e; --accent: #007aff;
+    --success: #32d74b; --error: #ff453a;
+    --bright-green: #39ff14; 
+    --text-sec: #8e8e93; --font: -apple-system, sans-serif;
+}
+
+body { margin: 0; font-family: var(--font); background: var(--bg); color: #fff; overflow: hidden; height: 100dvh; }
+.app-container { height: 100dvh; display: flex; flex-direction: column; }
+header { padding: calc(env(safe-area-inset-top) + 12px) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2c2c2e; }
+
+#scanner-box { position: relative; width: 100%; height: 45vh; background: #000; overflow: hidden; }
 #reader { width: 100% !important; height: 100% !important; }
-#target-kat-display { font-size: 24px; text-align: center; padding: 10px; }
-#target-kat-val { color: var(--accent); font-weight: 900; }
+#scanner-instruction { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 110; pointer-events: none; }
+#target-kat-display { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 2px; }
+#target-kat-val, .ean-meta-sep, .ean-size-container { font-size: 28px; font-weight: 900; }
+#target-kat-val { color: var(--accent); }
 #target-size-val { color: var(--error); font-weight: 900; }
-#scanner-visual { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; border: 2px solid #555; pointer-events: none; }
-.task-card { padding: 20px; text-align: center; }
-#task-qty { font-size: 60px; color: var(--success); }
-.btn-primary, .btn-success { background: var(--accent); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 10px; font-size: 18px; }
-.btn-success { background: var(--success); }
-#qty-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: flex-end; }
-.sheet { background: #1c1c1e; width: 100%; padding: 30px; border-top: 1px solid #333; border-radius: 20px 20px 0 0; }
-#qty-input { width: 80px; height: 60px; font-size: 30px; text-align: center; margin-right: 10px; }
-.input-group { display: flex; justify-content: center; margin-bottom: 20px; }
-.btn-cancel { background: #333; color: #fff; border: none; width: 100%; padding: 15px; border-radius: 10px; margin-top: 10px; }
-#error-overlay { display: none; position: fixed; inset: 0; background: var(--error); z-index: 2000; align-items: center; justify-content: center; font-size: 30px; }
+
+#scanner-visual { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); z-index: 100; pointer-events: none; transition: all 0.3s; }
+body.qr-mode #scanner-visual { width: 250px; height: 250px; }
+body.ean-mode #scanner-visual { width: 310px; height: 120px; }
+
+.corner { position: absolute; width: 35px; height: 35px; border: 5px solid #fff; border-radius: 4px; }
+.corner.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.corner.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.corner.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.corner.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+#laser-line { display: none; position: absolute; top: 50%; left: 10px; right: 10px; height: 2px; background: var(--error); box-shadow: 0 0 10px var(--error); }
+.ean-mode #laser-line { display: block; }
+
+.task-card { background: var(--card-bg); border-radius: 24px; padding: 25px; border: 1px solid #3a3a3c; margin: 15px; text-align: center; }
+#task-qty { font-size: 60px; font-weight: 900; color: var(--success); }
+.sheet { background: #1c1c1e; width: 100%; border-radius: 30px 30px 0 0; padding: 25px 25px calc(env(safe-area-inset-bottom) + 20px); border-top: 1px solid #3a3a3c; animation: slideUp 0.3s ease-out; }
+#qty-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; align-items: flex-end; }
+
+#qty-input { width: 120px; height: 80px; background: #000; border: 2px solid #3a3a3c; border-radius: 16px; color: #fff; font-size: 42px; text-align: center; outline: none; }
+.btn-success { flex-grow: 1; border-radius: 16px; background: var(--success); border: none; color: #fff; font-size: 20px; font-weight: 800; height: 80px; }
+.btn-cancel { width: 100%; padding: 18px; background: #2c2c2e; border-radius: 16px; border: none; color: #fff; font-size: 16px; font-weight: 700; margin-top: 15px; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
